@@ -3,54 +3,104 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IDS Docs — Raising The Village</title>
+<title>Documentation Hub — Raising The Village</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'IBM Plex Sans', system-ui, sans-serif;
     background: #183032; color: #fff;
     min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 32px 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 20px;
   }
-  .wrap { max-width: 560px; width: 100%; text-align: center; }
-  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
-    text-transform: uppercase; color: #4CB5BE; margin-bottom: 14px; }
-  h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 700; line-height: 1.1;
-    margin-bottom: 12px; }
-  .sub { font-size: 16px; opacity: 0.6; margin-bottom: 40px; }
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
-  .card {
+  .wrap { max-width: 720px; width: 100%; }
+
+  /* Header */
+  header { text-align: center; margin-bottom: 56px; }
+  .org { font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: #4CB5BE; margin-bottom: 20px; }
+  h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 700; line-height: 1.08;
+    margin-bottom: 14px; letter-spacing: -0.01em; }
+  .tagline { font-size: 17px; opacity: 0.55; line-height: 1.6; max-width: 460px; margin: 0 auto; }
+
+  /* Section heading */
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #4CB5BE;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 20px;
+  }
+
+  /* System cards */
+  .systems { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .sys-card {
     display: block; text-decoration: none; color: #fff;
     background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13);
-    border-radius: 10px; padding: 28px 20px; transition: background 0.18s;
+    border-radius: 12px; padding: 28px 24px;
+    transition: background 0.18s, border-color 0.18s;
+    position: relative; overflow: hidden;
   }
-  .card:hover { background: rgba(1,135,147,0.22); border-color: rgba(1,135,147,0.4); }
-  .card .ico { font-size: 32px; margin-bottom: 12px; }
-  .card .label { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-  .card .desc { font-size: 13px; opacity: 0.6; line-height: 1.5; }
-  footer { margin-top: 40px; font-size: 12px; opacity: 0.25; letter-spacing: 0.05em; }
-  @media (max-width: 440px) { .cards { grid-template-columns: 1fr; } }
+  .sys-card:hover { background: rgba(1,135,147,0.18); border-color: rgba(1,135,147,0.45); }
+  .sys-card.coming-soon { cursor: default; opacity: 0.45; }
+  .sys-card.coming-soon:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.13); }
+  .card-tag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px; margin-bottom: 16px;
+  }
+  .tag-live { background: rgba(1,135,147,0.25); color: #4CB5BE; }
+  .tag-soon { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+  .card-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .card-abbr { font-size: 12px; font-weight: 600; color: #4CB5BE; margin-bottom: 10px; }
+  .card-desc { font-size: 13px; opacity: 0.55; line-height: 1.6; }
+  .card-arrow {
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    opacity: 0.3; font-size: 18px; transition: opacity 0.15s, right 0.15s;
+  }
+  .sys-card:not(.coming-soon):hover .card-arrow { opacity: 0.7; right: 16px; }
+
+  /* Footer */
+  footer { text-align: center; font-size: 12px; opacity: 0.22; letter-spacing: 0.06em; margin-top: 8px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Raising The Village · Program Tools</div>
-  <h1>Intelligent Design System</h1>
-  <p class="sub">Documentation &amp; Introduction Materials</p>
-  <div class="cards">
-    <a class="card" href="index-guide.html">
-      <div class="ico">📋</div>
-      <div class="label">User Guide</div>
-      <div class="desc">Step-by-step reference for all IDS features — upload, design, documents, and settings</div>
+  <header>
+    <div class="org">Raising The Village</div>
+    <h1>Documentation Hub</h1>
+    <p class="tagline">Technical references, user guides, and onboarding materials for RTV program systems</p>
+  </header>
+
+  <div class="section-label">Systems</div>
+  <div class="systems">
+
+    <a class="sys-card" href="ids-docs/">
+      <span class="card-tag tag-live">Live</span>
+      <div class="card-title">Intelligent Design System</div>
+      <div class="card-abbr">IDS</div>
+      <div class="card-desc">User guide and presentation deck covering village design, input allocation, reporting, and Section Two documents.</div>
+      <div class="card-arrow">→</div>
     </a>
-    <a class="card" href="index-presentation.html">
-      <div class="ico">🎯</div>
-      <div class="label">Presentation</div>
-      <div class="desc">12-slide introduction deck for onboarding sessions with keyboard &amp; swipe navigation</div>
-    </a>
+
+    <div class="sys-card coming-soon">
+      <span class="card-tag tag-soon">Coming Soon</span>
+      <div class="card-title">Implementation System</div>
+      <div class="card-abbr">IMP</div>
+      <div class="card-desc">Field-level implementation tracking, monitoring visits, and program execution reference.</div>
+    </div>
+
+    <div class="sys-card coming-soon">
+      <span class="card-tag tag-soon">Coming Soon</span>
+      <div class="card-title">Monitoring &amp; Evaluation</div>
+      <div class="card-abbr">M&amp;E</div>
+      <div class="card-desc">Survey tools, outcome tracking, data collection protocols, and reporting dashboards.</div>
+    </div>
+
   </div>
-  <footer>IDS v 5.0 &nbsp;·&nbsp; Raising The Village &nbsp;·&nbsp; &copy; 2026</footer>
+
+  <footer>Raising The Village &nbsp;·&nbsp; rtvinc.github.io/docs &nbsp;·&nbsp; &copy; 2026</footer>
 </div>
 </body>
 </html>
