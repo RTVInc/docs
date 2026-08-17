@@ -122,7 +122,8 @@ body {
   line-height: 1.7;
   font-size: 16px;
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
@@ -130,8 +131,6 @@ body {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
   background: var(--sidebar-bg);
-  position: sticky;
-  top: 0;
   height: 100vh;
   overflow-y: auto;
   display: flex;
@@ -194,7 +193,7 @@ body {
 }
 
 /* ── Main ────────────────────────────────────────────────────────────── */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; height: 100vh; }
 .topbar {
   padding: 13px 48px;
   border-bottom: 1px solid var(--rule);
@@ -369,8 +368,9 @@ tbody tr:hover { background: var(--sprout-50); }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
-  body { flex-direction: column; }
+  body { flex-direction: column; height: auto; overflow: visible; }
   .sidebar { width: 100%; min-width: 0; height: auto; position: static; }
+  .main { height: auto; overflow-y: visible; }
   .sidebar-nav { flex-direction: row; flex-wrap: wrap; padding: 8px 12px; gap: 2px; }
   .sidebar-nav a { padding: 5px 10px; border-left: none; border-radius: 4px; font-size: 12px; }
   .sidebar-nav a.active { border-bottom: 2px solid var(--ochre-500); }
@@ -805,7 +805,7 @@ tbody tr:hover { background: var(--sprout-50); }
     <section id="design" class="section">
       <div class="section-eyebrow">Workflow Step 4</div>
       <h1 class="section-title">Designing a Project</h1>
-      <p class="section-lead">The Design workspace is where program officers allocate inputs village by village. Everything before this step sets the stage; everything after generates outputs from the decisions made here.</p>
+      <p class="section-lead">The Design workspace is where planners and program design officers allocate inputs village by village. Everything before this step sets the stage; everything after generates outputs from the decisions made here.</p>
 
       <h2 id="design-open">Opening the Design workspace</h2>
       <div class="steps">
@@ -818,7 +818,8 @@ tbody tr:hover { background: var(--sprout-50); }
           <div class="step-desc">Only districts assigned to your role are shown.</div>
         </div></div>
         <div class="step"><div class="step-num">3</div><div class="step-body">
-          <div class="step-title">Select one or more <strong>Clusters</strong></div>
+          <div class="step-title">Select a <strong>Cluster</strong></div>
+          <div class="step-desc">Design is processed one cluster at a time. Bulk multi-cluster design is planned for a future release.</div>
         </div></div>
         <div class="step"><div class="step-num">4</div><div class="step-body">
           <div class="step-title">Click <strong>Continue</strong></div>
@@ -850,29 +851,40 @@ tbody tr:hover { background: var(--sprout-50); }
       <h2 id="design-training">Training &amp; Champion Allocations</h2>
 
       <h3>Training allocations</h3>
-      <p>Training is allocated at the cluster level. IDS calculates and stores <strong>total training days</strong> and <strong>number of training sessions</strong> on the village record, so they can be pulled into Section 2 reports without re-aggregating.</p>
+      <p>Trainings are <strong>automatically allocated by the system</strong> at the cluster level based on configured training programmes. IDS calculates and stores <strong>total training days</strong> and <strong>number of training sessions</strong> on the village record so they can be pulled into Section 2 reports without re-aggregating.</p>
       <div class="steps">
         <div class="step"><div class="step-num">1</div><div class="step-body">
           <div class="step-title">Click <strong>Training Allocations</strong> in the allocation panel</div>
         </div></div>
         <div class="step"><div class="step-num">2</div><div class="step-body">
-          <div class="step-title">Select the village to trigger allocation across all cluster villages</div>
+          <div class="step-title">Select a village to trigger auto-allocation across all cluster villages</div>
+          <div class="step-desc">The system allocates from the backend; the view shows what has been allocated to each village.</div>
         </div></div>
         <div class="step"><div class="step-num">3</div><div class="step-body">
-          <div class="step-title">Save — total days and session counts are written to the database immediately</div>
+          <div class="step-title">Review in Preview — total days and session counts are stored immediately</div>
+          <div class="step-desc">Use <strong>Preview Allocations</strong> to inspect the per-village breakdown before generating documents.</div>
         </div></div>
       </div>
 
       <h3>Champion Representatives</h3>
-      <p>Champions are community members who distribute inputs to their neighbours. IDS supports two types:</p>
+      <p>Champions are community members who distribute inputs to their neighbours. IDS supports two types, both allocated at the village level:</p>
       <div class="def-list">
         <div class="def-item">
           <div class="def-term">Village Champion</div>
-          <div class="def-desc">Covers a set number of households within one village. Set the <strong>households per champion</strong> when allocating.</div>
+          <div class="def-desc">
+            Allocated one per village. The count scales with village size:
+            <ul style="margin: 8px 0 0 18px; line-height: 1.8;">
+              <li><strong>1 champion</strong> — fewer than 120 households</li>
+              <li><strong>2 champions</strong> — 120 or more households</li>
+              <li><strong>3 champions</strong> — 300 or more households</li>
+            </ul>
+          </div>
         </div>
         <div class="def-item">
           <div class="def-term">Community Champion</div>
-          <div class="def-desc">Covers households across multiple villages. Allocated at the cluster level.</div>
+          <div class="def-desc">
+            Covers a defined set of households within a village. Used for specialised programmes such as agriculture and livestock. The standard ratio is <strong>20 households per champion</strong>, though some programmes apply a ratio of 15 households per champion.
+          </div>
         </div>
       </div>
 
