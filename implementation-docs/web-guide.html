@@ -237,11 +237,11 @@ figure.screenshot figcaption {
     <div class="sidebar-nav">
       <a data-target="agriculture">Agriculture</a>
       <a data-target="vsla">VSLA</a>
-      <a data-target="vsf">VSF — Village Savings Fund</a>
+      <a data-target="vsf">VSF — Village Startup Fund</a>
       <a data-target="livestock">Livestock</a>
       <a data-target="leadership">Leadership &amp; Champions</a>
-      <a data-target="checkin">Check-ins</a>
-      <a data-target="coaching">SBCC Coaching</a>
+      <a data-target="checkin">Household Coaching</a>
+      <a data-target="coaching">SBCC Coaching (Pilot)</a>
       <a data-target="trainings">Trainings</a>
       <a data-target="workplans">Workplans</a>
       <a data-target="cards">Community Cards</a>
@@ -279,7 +279,7 @@ figure.screenshot figcaption {
       <h2>What the Web Platform Does</h2>
       <div class="cards">
         <div class="card"><div class="card-title">Programme Analytics</div><div class="card-body">Live dashboards across all modules — Agriculture, VSLA, VSF, Livestock, Check-ins, Trainings, and Workplans.</div></div>
-        <div class="card"><div class="card-title">VSF Approval</div><div class="card-body">Officer review and Manager approval of Village Savings Fund loan applications.</div></div>
+        <div class="card"><div class="card-title">VSF Approval</div><div class="card-body">Officer review and Manager approval of Village Startup Fund loan applications.</div></div>
         <div class="card"><div class="card-title">Leadership Management</div><div class="card-body">Register and manage all eight champion types across villages and clusters.</div></div>
         <div class="card"><div class="card-title">Workplan Tracking</div><div class="card-body">District and national-level workplan creation, progress monitoring, and performance tracking.</div></div>
         <div class="card"><div class="card-title">WorkMate AI</div><div class="card-body">AI assistant trained on programme data for instant field team support.</div></div>
@@ -449,7 +449,7 @@ figure.screenshot figcaption {
 
     <section id="vsf" class="section">
       <div class="section-eyebrow">Module</div>
-      <h1 class="section-title">VSF — Village Savings Fund</h1>
+      <h1 class="section-title">VSF — Village Startup Fund</h1>
       <p class="section-lead">The primary workspace for Officers reviewing loan applications and Managers approving or rejecting them. The web interface provides the full application history, grouped payments, and portfolio analytics.</p>
       <div class="callout note"><i class="callout-icon">&#8212;</i><div class="callout-body"><div class="callout-title">Available to</div><span class="role-badge rb-po">Project Officer</span> (review) &nbsp;<span class="role-badge rb-pm">Manager</span> (approve) &nbsp;<span class="role-badge rb-admin">Admin</span> (all)</div></div>
       <figure class="screenshot">
@@ -568,7 +568,7 @@ figure.screenshot figcaption {
             <tr><td>Village Champion</td><td>Overall village leadership</td><td>1 per village (&lt;120 HH); 2 (120&#8211;299 HH); 3 (300+ HH)</td></tr>
             <tr><td>Community Champion</td><td>Agriculture &amp; Livestock</td><td>1 per 20 HH (minimum 15 HH per champion)</td></tr>
             <tr><td>VSLA Champion</td><td>Village Savings and Loan Associations</td><td>1 per VSLA group</td></tr>
-            <tr><td>VSF Champion</td><td>Village Savings Fund applications</td><td>1 per assigned VSLA group</td></tr>
+            <tr><td>VSF Champion</td><td>Village Startup Fund applications</td><td>1 per assigned VSLA group</td></tr>
             <tr><td>Hygiene Champion</td><td>WASH and sanitation</td><td>1 per 20 HH</td></tr>
             <tr><td>Coffee Champion</td><td>Coffee cultivation programme</td><td>1 per village in coffee programme areas</td></tr>
             <tr><td>Livestock Champion</td><td>Livestock follow-up and pass-ons</td><td>1 per 20 livestock households</td></tr>
@@ -580,25 +580,30 @@ figure.screenshot figcaption {
 
     <section id="checkin" class="section">
       <div class="section-eyebrow">Module</div>
-      <h1 class="section-title">Check-ins</h1>
+      <h1 class="section-title">Household Coaching</h1>
       <p class="section-lead">Aggregates all household and community compliance visits from the mobile app. Officers and Managers review compliance scores and identify areas needing intervention.</p>
       <div class="callout note"><i class="callout-icon">&#8212;</i><div class="callout-body"><div class="callout-title">Available to</div><span class="role-badge rb-po">Project Officer</span><span class="role-badge rb-pm">Manager</span><span class="role-badge rb-admin">Admin</span></div></div>
       <h2>Dashboard</h2>
       <div class="def-list">
-        <div class="def-item"><div class="def-term">Completion Rate</div><div class="def-desc">Scheduled vs. completed check-ins as a percentage and absolute count.</div></div>
+        <div class="def-item"><div class="def-term">Completion Rate</div><div class="def-desc">Scheduled vs. completed Household Coaching visits as a percentage and absolute count.</div></div>
         <div class="def-item"><div class="def-term">Average Compliance Scores</div><div class="def-desc">Programme-wide average for each domain: WASH, Agriculture, Livestock, VSLA. Colour-coded by band.</div></div>
         <div class="def-item"><div class="def-term">Geographic Heatmap</div><div class="def-desc">Village-level compliance visualisation — darker shade indicates higher compliance.</div></div>
         <div class="def-item"><div class="def-term">Officer Activity</div><div class="def-desc">Check-in submission count per officer — identifies officers behind on their visit schedule.</div></div>
         <div class="def-item"><div class="def-term">Household Status Breakdown</div><div class="def-desc">Count by status (Active / Temporarily Absent / Migrated / Inactive) — monitors programme attrition.</div></div>
       </div>
       <h2>Check-in Records</h2>
-      <p>Full table of all submitted check-ins — date, household, village, officer, check-in type, and overall compliance score. Click any row to see the full assessment detail including domain scores and photos.</p>
+      <p>Full table of all submitted Household Coaching visits — date, household, village, officer, check-in type, and overall compliance score. Click any row to see the full assessment detail including domain scores and photos.</p>
     </section>
 
     <section id="coaching" class="section">
       <div class="section-eyebrow">Module</div>
-      <h1 class="section-title">SBCC Coaching</h1>
-      <p class="section-lead">The SBCC Coaching module aggregates all household coaching sessions from the mobile app. Officers and Managers review session outcomes, barrier patterns, and AI message effectiveness across their districts.</p>
+      <h1 class="section-title">SBCC Coaching (Pilot)</h1>
+      <p class="section-lead">SBCC (Social Behaviour and Communication Change) Coaching aggregates AI-powered coaching sessions from the mobile app. It is currently a pilot available in select clusters only. Officers and Managers in pilot areas can review session outcomes, barrier patterns, and AI message effectiveness across their districts.</p>
+
+      <div class="callout warn">
+        <i class="callout-icon">&#8212;</i>
+        <div class="callout-body"><div class="callout-title">Pilot programme — select clusters only</div>SBCC Coaching data will only appear here if your programme area includes pilot clusters. The SBCC form has a distinct interface from the standard Household Coaching form on the mobile app.</div>
+      </div>
       <div class="callout note"><i class="callout-icon">&#8212;</i><div class="callout-body"><div class="callout-title">Available to</div><span class="role-badge rb-po">Project Officer</span><span class="role-badge rb-pm">Manager</span><span class="role-badge rb-admin">Admin</span></div></div>
       <div class="screenshot-row">
         <figure class="screenshot">
