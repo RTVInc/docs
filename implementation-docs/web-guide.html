@@ -212,6 +212,75 @@ figure.screenshot figcaption {
   .screenshot-row { grid-template-columns: 1fr; }
 }
 
+
+/* ── Sidebar search ──────────────────────────────────────────────────────── */
+.sidebar-search { padding: 14px 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 9px; color: var(--ink-muted); pointer-events: none; flex-shrink: 0; }
+.search-input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13px;
+  padding: 7px 26px 7px 30px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-appearance: none;
+}
+.search-input::placeholder { color: var(--ink-muted); }
+.search-input:focus { border-color: var(--teal); background: rgba(1,135,147,0.08); }
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration { display: none; }
+.search-clear {
+  position: absolute; right: 7px;
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-muted); font-size: 14px; line-height: 1;
+  padding: 2px 3px; display: none;
+  transition: color 0.15s;
+}
+.search-clear:hover { color: var(--ink); }
+.search-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 7px;
+  min-height: 20px;
+}
+.search-bar.visible { display: flex; }
+.search-count { font-size: 11px; color: var(--ink-muted); letter-spacing: 0.04em; }
+.search-nav { display: flex; gap: 3px; }
+.search-nav-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 8px;
+  line-height: 1.5;
+  transition: background 0.12s, color 0.12s;
+}
+.search-nav-btn:hover { background: rgba(255,255,255,0.12); color: var(--ink); }
+.search-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ── Search highlights ───────────────────────────────────────────────────── */
+mark.search-hit {
+  background: rgba(1,135,147,0.28);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  font: inherit;
+}
+mark.search-hit.current {
+  background: #EAB468;
+  color: #1a1200;
+  border-radius: 2px;
+  outline: 2px solid #EAB468;
+  outline-offset: 0;
+}
 </style>
 </head>
 <body>
@@ -223,6 +292,21 @@ figure.screenshot figcaption {
     </div>
     <div class="sidebar-doc-title">Web Platform Guide</div>
   </div>
+  <div class="sidebar-search">
+    <div class="search-wrap">
+      <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" type="search" id="doc-search" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search document">
+      <button class="search-clear" id="search-clear" aria-label="Clear search" tabindex="-1">&#x2715;</button>
+    </div>
+    <div class="search-bar" id="search-bar">
+      <span class="search-count" id="search-count"></span>
+      <div class="search-nav">
+        <button class="search-nav-btn" id="search-prev" aria-label="Previous result" title="Previous (Shift+Enter)">↑</button>
+        <button class="search-nav-btn" id="search-next" aria-label="Next result" title="Next (Enter)">↓</button>
+      </div>
+    </div>
+  </div>
+
   <div class="nav-section">
     <span class="nav-label">Getting Started</span>
     <div class="sidebar-nav">
@@ -843,6 +927,118 @@ document.querySelectorAll('figure.screenshot img').forEach(img => {
 lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
 lbClose.addEventListener('click', closeLb);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) closeLb(); });
+
+// ── Document search ──────────────────────────────────────────────────────────
+(function () {
+  const input   = document.getElementById('doc-search');
+  const clearBtn= document.getElementById('search-clear');
+  const countEl = document.getElementById('search-count');
+  const bar     = document.getElementById('search-bar');
+  const prevBtn = document.getElementById('search-prev');
+  const nextBtn = document.getElementById('search-next');
+  const content = document.querySelector('.content');
+
+  let hits = [], cur = -1;
+
+  function stripMarks() {
+    content.querySelectorAll('mark.search-hit').forEach(m => {
+      const parent = m.parentNode;
+      while (m.firstChild) parent.insertBefore(m.firstChild, m);
+      parent.removeChild(m);
+      parent.normalize();
+    });
+    hits = []; cur = -1;
+  }
+
+  function reset() {
+    stripMarks();
+    countEl.textContent = '';
+    bar.classList.remove('visible');
+    clearBtn.style.display = 'none';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+  }
+
+  function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function walkText(root, re) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const p = node.parentElement;
+        if (!p) return NodeFilter.FILTER_REJECT;
+        const tag = p.tagName;
+        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'MARK') return NodeFilter.FILTER_REJECT;
+        if (p.closest('img, figure.screenshot')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+
+    nodes.forEach(node => {
+      const text = node.nodeValue;
+      if (!re.test(text)) { re.lastIndex = 0; return; }
+      re.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      while ((m = re.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const mark = document.createElement('mark');
+        mark.className = 'search-hit';
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        last = m.index + m[0].length;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  function goTo(idx) {
+    if (!hits.length) return;
+    if (cur >= 0) hits[cur].classList.remove('current');
+    cur = ((idx % hits.length) + hits.length) % hits.length;
+    hits[cur].classList.add('current');
+    hits[cur].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    countEl.textContent = (cur + 1) + ' / ' + hits.length;
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+  }
+
+  function doSearch(q) {
+    reset();
+    if (q.length < 2) return;
+    clearBtn.style.display = '';
+    const re = new RegExp(esc(q), 'gi');
+    walkText(content, re);
+    hits = Array.from(content.querySelectorAll('mark.search-hit'));
+    bar.classList.add('visible');
+    if (!hits.length) { countEl.textContent = 'No results'; return; }
+    goTo(0);
+  }
+
+  let debounce;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => doSearch(input.value.trim()), 120);
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); goTo(e.shiftKey ? cur - 1 : cur + 1); }
+  });
+  clearBtn.addEventListener('click', () => { input.value = ''; reset(); input.focus(); });
+  prevBtn.addEventListener('click', () => goTo(cur - 1));
+  nextBtn.addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && hits.length) { input.value = ''; reset(); }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'f' && !e.shiftKey) {
+      e.preventDefault(); input.focus(); input.select();
+    }
+  });
+
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
+})();
 </script>
 </body>
 </html>
