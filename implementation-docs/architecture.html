@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>System Architecture — Implementation · Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032;
+    --teal: #018793;
+    --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87);
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09);
+    --card-bg: rgba(255,255,255,0.05);
+    --card-bd: rgba(255,255,255,0.1);
+    --code-bg: rgba(0,0,0,0.35);
+    --amber: #EAB468;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--spruce); color: var(--ink); min-height: 100vh;
+  }
+
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--rule);
+  }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); max-width: 900px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 15px; color: var(--ink-mid); line-height: 1.65; max-width: 640px; }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 32px 80px; }
+
+  h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin: 48px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 15px; font-weight: 700; margin: 28px 0 10px; color: var(--teal-l); }
+
+  p { font-size: 14px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 16px; }
+
+  /* Mermaid diagrams */
+  .diagram-wrap {
+    background: rgba(0,0,0,0.25); border: 1px solid var(--card-bd);
+    border-radius: 10px; padding: 24px; overflow-x: auto; margin-bottom: 24px;
+  }
+  .mermaid { min-width: 500px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin-bottom: 28px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-l); padding: 8px 14px; border-bottom: 1px solid var(--rule); text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--ink-mid); vertical-align: top; line-height: 1.55; }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--ink); }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 12px; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; }
+
+  /* Service prefix table first column mono */
+  .mono td:first-child { font-family: 'IBM Plex Mono', monospace; font-weight: 400; font-size: 12px; }
+
+  /* Note */
+  .note { background: rgba(1,135,147,0.1); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 20px; }
+  .note p { color: var(--ink-mid); margin-bottom: 0; font-size: 13px; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 14px 20px; }
+    .hero, .wrap { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Implementation Docs
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Implementation System · Technical Reference</div>
+  <h1>System Architecture</h1>
+  <p>Production architecture of the Implementation MS Backend, following a high-availability pattern with distinct layers: User Access, Application &amp; Data, and Operational Tools.</p>
+</div>
+
+<div class="wrap">
+
+  <h2>High-Level Overview</h2>
+
+  <div class="diagram-wrap">
+    <pre class="mermaid">
+flowchart TB
+    subgraph UserAccess["1. User Access Layer"]
+        User[User — Web Browser / Mobile App]
+        DNS[DNS — api.gateway.nonproftinnovations.io]
+        LB[Load Balancer — Gateway/Bastion + HAProxy/Nginx]
+        User --> DNS
+        DNS --> LB
+    end
+
+    subgraph DC1["DC1 — Application & Data"]
+        subgraph App["Web Servers"]
+            K8s[K8s Cluster + Tyk Gateway]
+            Micro[Microservices — userweb, agricweb, datamongoweb ...]
+            K8s --> Micro
+        end
+
+        subgraph Queue["Message Queue"]
+            RabbitMQ[RabbitMQ]
+        end
+
+        subgraph Workers["Workers"]
+            Worker[Background Jobs — Dump Service]
+        end
+
+        subgraph DataStores["Data Stores"]
+            DBWrite[(MySQL — Write)]
+            DBRead[(MongoDB — Read / DataMongo)]
+            Redis[(Redis — Cache)]
+            S3[(S3 — Backups)]
+        end
+
+        App --> RabbitMQ
+        RabbitMQ --> Workers
+        App --> DBWrite
+        App --> DBRead
+        App --> Redis
+        Workers --> DBRead
+        DBWrite --> S3
+    end
+
+    subgraph DevOps["Tools — DevOps Server"]
+        Loki[Loki]
+        Zipkin[Zipkin]
+        UptimeKuma[Uptime Kuma]
+        Portainer[Portainer]
+    end
+
+    LB --> App
+    Loki -.->|collects logs| App
+    Loki -.->|collects logs| Workers
+    Zipkin -.->|traces requests| App
+    UptimeKuma -.->|uptime checks| App
+    Portainer -.->|manages containers| App
+    </pre>
+  </div>
+
+  <h3>Layer summary</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Layer</th><th>Components</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>User Access</td><td>DNS, Load Balancer (HAProxy / Nginx)</td><td>HTTPS termination, traffic distribution</td></tr>
+      <tr><td>Application</td><td>K8s Cluster + Tyk Gateway + Microservices</td><td>API routing and business logic</td></tr>
+      <tr><td>Message Queue</td><td>RabbitMQ</td><td>Async task decoupling — web servers publish, workers consume</td></tr>
+      <tr><td>Workers</td><td>Background jobs, dump service</td><td>Async enrichment, data transformation</td></tr>
+      <tr><td>Data</td><td><strong>MySQL</strong> (writes), <strong>MongoDB</strong> (reads / analytics), <strong>Redis</strong> (cache), <strong>S3</strong> (backups)</td><td>Storage layer</td></tr>
+      <tr><td>Tools (DevOps)</td><td>Loki, Zipkin, Uptime Kuma, Portainer</td><td>Logging, tracing, monitoring, container management</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Microservices</h2>
+
+  <div class="diagram-wrap">
+    <pre class="mermaid">
+flowchart LR
+    subgraph Client["Client Layer"]
+        Web[Web App]
+        Mobile[Mobile App]
+    end
+
+    subgraph K8s["Kubernetes Cluster — Tyk API Gateway"]
+        User[userweb x3]
+        Agric[agricweb x3]
+        DataMongo[datamongoweb x3]
+        Vsla[vslaweb x3]
+        Others[training, livestock, leadership, checkin, workplan ...]
+    end
+
+    subgraph DB["Database Layer"]
+        UserDB[(User DB)]
+        AgricDB[(Agric DB)]
+        DataMongoDB[(DataMongo DB)]
+        VslaDB[(Vsla DB)]
+    end
+
+    Web --> K8s
+    Mobile --> K8s
+    User --> UserDB
+    Agric --> AgricDB
+    DataMongo --> DataMongoDB
+    Vsla --> VslaDB
+    </pre>
+  </div>
+
+  <p>Each microservice runs inside the Kubernetes cluster with <strong>3 replicas</strong>. The Tyk API Gateway routes requests by path prefix to the appropriate service. Each service owns its dedicated database.</p>
+
+  <h3>Service path prefixes</h3>
+  <div class="table-wrap">
+  <table class="mono">
+    <thead><tr><th>Path Prefix</th><th>Service</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>/user-svc/</td><td>userweb</td><td>User accounts and authentication</td></tr>
+      <tr><td>/profile-svc/</td><td>profileweb</td><td>Household and beneficiary profiles</td></tr>
+      <tr><td>/training-svc/</td><td>trainingweb</td><td>Training session data</td></tr>
+      <tr><td>/agric-svc/</td><td>agricweb</td><td>Agriculture distributions and yields</td></tr>
+      <tr><td>/vsla-svc/</td><td>vslaweb</td><td>VSLA groups, savings, and loans</td></tr>
+      <tr><td>/data-svc/</td><td>datamongoweb</td><td>Analytics read store (DataMongo)</td></tr>
+      <tr><td>/livestock-svc/</td><td>livestockweb</td><td>Livestock distribution and follow-up</td></tr>
+      <tr><td>/leadership-svc/</td><td>leadershipweb</td><td>Village champion registry</td></tr>
+      <tr><td>/checkin-svc/</td><td>checkinweb</td><td>Household coaching and check-ins</td></tr>
+      <tr><td>/workplan-svc/</td><td>workplanweb</td><td>Programme workplans</td></tr>
+      <tr><td>/dump-svc/</td><td>dump (worker)</td><td>Background data enrichment</td></tr>
+      <tr><td>/notification-svc/</td><td>notificationweb</td><td>Push notifications</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note"><p><strong>Example request:</strong> <code>https://92mfti4b-gateway.nonproftinnovations.io/data-svc/api/data/trainings/web/web-dashboard?tgd=...</code><br>Tyk matches <code>/data-svc/</code>, strips the prefix, and forwards to <code>http://datamongoweb/api/data/...</code></p></div>
+
+  <h2>Load Balancing</h2>
+
+  <div class="diagram-wrap">
+    <pre class="mermaid">
+flowchart LR
+    Client[Web / Mobile] -->|HTTPS| LB[Load Balancer — HAProxy or Nginx Round-robin]
+    LB --> Tyk1[Tyk NodePort 30010 — Node 1]
+    LB --> Tyk2[Tyk NodePort 30010 — Node 2]
+    LB --> Tyk3[Tyk NodePort 30010 — Node 3]
+    Tyk1 -->|routes by path| Services[Microservices]
+    Tyk2 -->|routes by path| Services
+    Tyk3 -->|routes by path| Services
+    </pre>
+  </div>
+
+  <p>The Gateway/Bastion server runs HAProxy or Nginx to distribute traffic across 3 Kubernetes nodes in round-robin. Each node exposes Tyk Gateway on NodePort <code>30010</code>.</p>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Load Balancer</th><th>Listen Port</th><th>Algorithm</th></tr></thead>
+    <tbody>
+      <tr><td>HAProxy</td><td>8100</td><td>Round-robin</td></tr>
+      <tr><td>Nginx</td><td>80</td><td>Round-robin (default)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Message Bus (RabbitMQ)</h2>
+
+  <p>Programme services publish domain events to RabbitMQ exchanges. The DataMongo service subscribes to all topic exchanges, consuming events to build the analytics read store (MongoDB).</p>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Service</th><th>Queue</th><th>Exchange</th><th>Binding</th></tr></thead>
+    <tbody>
+      <tr><td>Training</td><td>training</td><td>training_topic</td><td>data_mongo</td></tr>
+      <tr><td>Agriculture</td><td>agric</td><td>agric_topic</td><td>data_mongo</td></tr>
+      <tr><td>VSLA</td><td>vsla</td><td>vsla_topic</td><td>data_mongo</td></tr>
+      <tr><td>Livestock</td><td>livestock</td><td>livestock_topic</td><td>data_mongo</td></tr>
+      <tr><td>Leadership</td><td>leadership</td><td>leadership_topic</td><td>data_mongo</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Observability</h2>
+
+  <p>The DevOps server (<code>10.0.156.xxx</code>) hosts the operational tooling stack that monitors and manages the application cluster.</p>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Tool</th><th>Purpose</th><th>URL</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Loki + Promtail + Grafana</strong></td><td>Centralized log aggregation and querying</td><td>Via Grafana dashboard</td></tr>
+      <tr><td><strong>Zipkin</strong></td><td>Distributed request tracing across microservices</td><td>imp-zip-kin.nonproftinnovations.io</td></tr>
+      <tr><td><strong>Uptime Kuma</strong></td><td>Endpoint uptime monitoring and alerting</td><td>Internal</td></tr>
+      <tr><td><strong>Portainer</strong></td><td>Container management UI</td><td>imp-container-mg.nonproftinnovations.io</td></tr>
+      <tr><td><strong>Zabbix</strong></td><td>Host and agent monitoring, alerts</td><td>Internal</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Server Inventory</h2>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Role</th><th>Private IP</th><th>Public IP</th></tr></thead>
+    <tbody>
+      <tr><td>Application (K8s nodes, 3×)</td><td>10.0.159.161, 10.0.155.230, 10.0.155.158</td><td>—</td></tr>
+      <tr><td>Worker (background jobs)</td><td>10.0.155.149</td><td>—</td></tr>
+      <tr><td>DB Write (MySQL primary)</td><td>10.0.144.54</td><td>—</td></tr>
+      <tr><td>DB Read (MongoDB / DataMongo)</td><td>10.0.154.142</td><td>—</td></tr>
+      <tr><td>Cache (Redis)</td><td>10.0.145.253</td><td>—</td></tr>
+      <tr><td>Message Broker (RabbitMQ)</td><td>10.0.146.216</td><td>—</td></tr>
+      <tr><td>DevOps tooling</td><td>10.0.156.217</td><td>—</td></tr>
+      <tr><td>Gateway / Bastion</td><td>10.0.25.42</td><td>18.217.143.214</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+<footer>Implementation System &nbsp;&middot;&nbsp; Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { darkMode: true, background: '#183032', primaryColor: '#018793', primaryTextColor: 'rgba(255,255,255,0.87)', edgeLabelBackground: '#183032' } });
+</script>
+</body>
+</html>

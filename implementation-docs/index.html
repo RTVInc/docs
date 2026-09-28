@@ -93,10 +93,30 @@ html, body {
   padding-bottom: 12px; margin-bottom: 24px;
 }
 
+/* ── Docs category label ── */
+.docs-cat {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--ink-muted); margin: 24px 0 12px; padding-left: 2px;
+}
+.docs-cat:first-of-type { margin-top: 0; }
+
+/* ── Doc badge ── */
+.doc-badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px; margin-bottom: 10px; align-self: flex-start;
+}
+.badge-live { background: rgba(1,135,147,0.22); color: var(--teal-l); }
+.badge-soon { background: rgba(255,255,255,0.07); color: var(--ink-muted); }
+.badge-ext  { background: rgba(234,180,104,0.15); color: #EAB468; }
+
+/* ── Coming-soon and external card states ── */
+.doc-card.soon { cursor: default; opacity: 0.4; }
+.doc-card.ext:hover { background: rgba(234,180,104,0.1); border-color: rgba(234,180,104,0.3); }
+
 /* ── Docs grid ── */
 .docs-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 16px; margin-bottom: 60px;
+  gap: 14px; margin-bottom: 8px;
 }
 .doc-card {
   display: flex; flex-direction: column; position: relative;
@@ -188,12 +208,15 @@ footer { text-align: center; padding: 36px 24px; font-size: 12px; opacity: 0.2; 
 <div class="wrap">
 
   <div class="section-hd">Documentation</div>
+
+  <div class="docs-cat">User Guides</div>
   <div class="docs-grid">
 
     <a class="doc-card" href="mobile-guide.html">
       <div class="doc-card-icon">
         <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
       </div>
+      <span class="doc-badge badge-live">Live</span>
       <div class="doc-label">Mobile App Guide</div>
       <div class="doc-for">Project Assistants · Officers · Champions</div>
       <div class="doc-desc">Complete guide to the field application — training forms, agriculture distributions, VSLA activities, VSF loan management, livestock, household check-ins, SBCC coaching, and community cards.</div>
@@ -204,6 +227,7 @@ footer { text-align: center; padding: 36px 24px; font-size: 12px; opacity: 0.2; 
       <div class="doc-card-icon">
         <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
+      <span class="doc-badge badge-live">Live</span>
       <div class="doc-label">Web Platform Guide</div>
       <div class="doc-for">Officers · Project Managers · Administrators</div>
       <div class="doc-desc">Complete guide to the web dashboard — module dashboards, VSF approval workflows, VSLA management, leadership registry, check-in reports, WorkMate AI, and user administration.</div>
@@ -214,11 +238,101 @@ footer { text-align: center; padding: 36px 24px; font-size: 12px; opacity: 0.2; 
       <div class="doc-card-icon">
         <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       </div>
+      <span class="doc-badge badge-live">Live</span>
       <div class="doc-label">Role Quick-Start</div>
       <div class="doc-for">All Users · Onboarding</div>
       <div class="doc-desc">Role-specific quick-start cards for Project Assistants, VSLA/VSF Champions, and Project Officers/Managers. Key tasks, daily workflows, and first steps.</div>
       <div class="doc-arrow">&#8594;</div>
     </a>
+
+  </div>
+
+  <div class="docs-cat">API Reference</div>
+  <div class="docs-grid">
+
+    <a class="doc-card ext" href="api-reference.html">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <span class="doc-badge badge-ext">Available</span>
+      <div class="doc-label">Backend API / Swagger</div>
+      <div class="doc-for">Developers · Integrations</div>
+      <div class="doc-desc">Auto-generated Swagger documentation for all 10 backend microservices — User, Profile, Training, Agriculture, VSLA, DataMongo, Livestock, Leadership, Check-in, and Workplan.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+  </div>
+
+  <div class="docs-cat">Technical Reference</div>
+  <div class="docs-grid">
+
+    <a class="doc-card" href="architecture.html">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <span class="doc-badge badge-live">Available</span>
+      <div class="doc-label">System Architecture</div>
+      <div class="doc-for">Developers · Engineering</div>
+      <div class="doc-desc">Production architecture — load balancer, Kubernetes cluster, Tyk API gateway, microservices, RabbitMQ, MySQL/MongoDB/Redis, and operational tooling.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+    <a class="doc-card" href="dev-setup.html">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <span class="doc-badge badge-live">Available</span>
+      <div class="doc-label">Developer Setup</div>
+      <div class="doc-for">Developers · New Team Members</div>
+      <div class="doc-desc">Local development setup — Docker, environment configuration, database dumps from staging, RabbitMQ queue setup, and the data enrichment process.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+    <div class="doc-card soon">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Data Model</div>
+      <div class="doc-for">Developers · Data Team</div>
+      <div class="doc-desc">Entity-relationship diagrams and field documentation for all 11 microservice databases — households, agriculture, VSLA, training, livestock, leadership, check-in, and analytics.</div>
+    </div>
+
+    <div class="doc-card soon">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Mobile Component Docs</div>
+      <div class="doc-for">Mobile Developers</div>
+      <div class="doc-desc">Internal Flutter component documentation — architecture decisions, reusable widgets, state management patterns, and the offline-sync mechanism.</div>
+    </div>
+
+  </div>
+
+  <div class="docs-cat">Operations</div>
+  <div class="docs-grid">
+
+    <a class="doc-card ext" href="operations.html">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M22 12a10 10 0 0 1-10 10M12 2A10 10 0 0 1 22 12M2 12A10 10 0 0 1 12 2M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      </div>
+      <span class="doc-badge badge-ext">Available</span>
+      <div class="doc-label">Operations Reference</div>
+      <div class="doc-for">DevOps · Engineering</div>
+      <div class="doc-desc">Index of operations documentation — CI/CD workflows, Kubernetes deployment, Istio service mesh, database backups, EBS migration, monitoring with Zabbix, and logging with Loki/Grafana.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+    <div class="doc-card soon">
+      <div class="doc-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Incident Runbook</div>
+      <div class="doc-for">DevOps · On-Call</div>
+      <div class="doc-desc">Step-by-step runbooks for common production incidents — service unavailability, database failover, queue backlog, and data sync failures.</div>
+    </div>
 
   </div>
 

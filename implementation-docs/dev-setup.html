@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Developer Setup — Implementation · Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032;
+    --teal: #018793;
+    --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87);
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09);
+    --card-bg: rgba(255,255,255,0.05);
+    --card-bd: rgba(255,255,255,0.1);
+    --code-bg: rgba(0,0,0,0.35);
+    --amber: #EAB468;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--spruce); color: var(--ink); min-height: 100vh;
+  }
+
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--rule);
+  }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); max-width: 900px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 15px; color: var(--ink-mid); line-height: 1.65; max-width: 640px; }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* Numbered steps */
+  .steps { counter-reset: step; list-style: none; margin: 0 0 32px; }
+  .steps li {
+    counter-increment: step;
+    display: grid; grid-template-columns: 36px 1fr; gap: 16px;
+    padding: 20px 0; border-bottom: 1px solid var(--rule);
+  }
+  .steps li:last-child { border-bottom: none; }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(1,135,147,0.2); border: 1px solid rgba(1,135,147,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--teal-l);
+  }
+  .step-num::before { content: counter(step); }
+
+  h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin: 48px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 15px; font-weight: 700; margin: 24px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; color: var(--teal-l); margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
+
+  p { font-size: 14px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--card-bd);
+    border-radius: 8px; padding: 16px 20px; overflow-x: auto;
+    font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 13px;
+    line-height: 1.6; color: var(--ink); margin: 12px 0 20px;
+  }
+  code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 12px; background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  .note { background: rgba(1,135,147,0.1); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 16px; }
+  .warn { background: rgba(234,180,104,0.1); border-left: 3px solid var(--amber); border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 16px; }
+  .note p, .warn p { color: var(--ink-mid); margin-bottom: 0; font-size: 13px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-l); padding: 8px 14px; border-bottom: 1px solid var(--rule); text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--ink-mid); }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  td a { color: var(--teal-l); text-decoration: none; font-size: 12px; font-family: monospace; }
+  td a:hover { text-decoration: underline; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 14px 20px; }
+    .hero, .wrap { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Implementation Docs
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Implementation System · Developer Guide</div>
+  <h1>Developer Setup</h1>
+  <p>How to get the Implementation MS Backend running locally. This guide covers forking the repo, running Docker containers, seeding databases from staging, configuring RabbitMQ, and running the data enrichment process.</p>
+</div>
+
+<div class="wrap">
+
+  <h2>Prerequisites</h2>
+  <ul style="margin: 0 0 24px 20px; color: var(--ink-mid); font-size: 14px; line-height: 2;">
+    <li>Docker Desktop installed and running</li>
+    <li>Git with access to the RTVInc GitHub organisation</li>
+    <li>Credentials doc (shared separately — contains staging DB login details)</li>
+  </ul>
+
+  <div class="note"><p>Familiarity with <strong>Laravel</strong>, <strong>Domain-Driven Design</strong>, <strong>Event-Driven Design</strong>, and <strong>Microservices</strong> is expected. The backend also contains some ExpressJS services.</p></div>
+
+  <h2>Getting Started</h2>
+
+  <h3>1. Fork and clone</h3>
+  <pre><code># Fork from RTVInc/implementation-ms-backend in GitHub, then:
+git clone git@github.com:YOUR_FORK/implementation-ms-backend.git
+cd implementation-ms-backend</code></pre>
+
+  <h3>2. Configure environment files</h3>
+  <p>Each microservice requires its own <code>.env</code> file with DB credentials, queue names, and service-specific config. There is also a root-level <code>.env</code> for Docker Compose.</p>
+  <pre><code># Copy the example Docker Compose config
+cp docker-compose.example.yml docker-compose.yml
+
+# Create .env files for each service (DB, queue config)
+# Values are in the credentials doc</code></pre>
+
+  <h3>3. Build and run</h3>
+  <pre><code># Build and start all containers
+make rebuild
+
+# Install PHP packages in each service container
+make install-packages
+
+# Run database migrations
+make db-migrate
+
+# Start the application
+make run</code></pre>
+
+  <p>Once running, open Docker Desktop to verify all containers are healthy.</p>
+
+  <h2>Database Setup</h2>
+
+  <div class="warn"><p>Always import <strong>complete</strong> dumps from staging. Partial dumps cause enrichment failures downstream.</p></div>
+
+  <p>The local databases need to be seeded from staging to have real data. This is done by exporting dumps from the staging databases and importing them locally.</p>
+
+  <h3>Steps</h3>
+  <ol style="margin: 0 0 20px 20px; color: var(--ink-mid); font-size: 14px; line-height: 2.2;">
+    <li>Open the staging database admin links below and sign in with credentials from the credentials doc</li>
+    <li>Export the full database as a SQL dump</li>
+    <li>In Docker Desktop, find the local container for the same service (names match staging names)</li>
+    <li>Drop all existing tables in the local database</li>
+    <li>Import the <code>.sql</code> dump — repeat for all services</li>
+  </ol>
+
+  <h3>Staging database admin links</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Service</th><th>Staging Admin URL</th></tr></thead>
+    <tbody>
+      <tr><td>User</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8092" target="_blank" rel="noopener">ec2-3-147-217-86...:8092</a></td></tr>
+      <tr><td>Profile</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8094" target="_blank" rel="noopener">ec2-3-147-217-86...:8094</a></td></tr>
+      <tr><td>Training</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8093" target="_blank" rel="noopener">ec2-3-147-217-86...:8093</a></td></tr>
+      <tr><td>Agriculture</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8098" target="_blank" rel="noopener">ec2-3-147-217-86...:8098</a></td></tr>
+      <tr><td>VSLA</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8091" target="_blank" rel="noopener">ec2-3-147-217-86...:8091</a></td></tr>
+      <tr><td>DataMongo</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8097" target="_blank" rel="noopener">ec2-3-147-217-86...:8097</a></td></tr>
+      <tr><td>Livestock</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8096" target="_blank" rel="noopener">ec2-3-147-217-86...:8096</a></td></tr>
+      <tr><td>Leadership</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8099" target="_blank" rel="noopener">ec2-3-147-217-86...:8099</a></td></tr>
+      <tr><td>Check-in</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8095" target="_blank" rel="noopener">ec2-3-147-217-86...:8095</a></td></tr>
+      <tr><td>Workplan</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8101" target="_blank" rel="noopener">ec2-3-147-217-86...:8101</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>RabbitMQ Setup</h2>
+
+  <p>Each microservice has a corresponding RabbitMQ queue and exchange. These must be configured manually after the containers are running.</p>
+
+  <ol style="margin: 0 0 20px 20px; color: var(--ink-mid); font-size: 14px; line-height: 2.2;">
+    <li>Open RabbitMQ management UI from Docker Desktop</li>
+    <li>Navigate to <strong>Queues and Streams</strong> — add a queue for each service using the names in the table below</li>
+    <li>Navigate to <strong>Exchanges</strong> — create a <code>topic</code> exchange for each service</li>
+    <li>Bind each exchange to <code>data_mongo</code>, using the queue name as the routing key</li>
+  </ol>
+
+  <div class="note"><p>Queues like <code>data_mongo</code> are auto-created. Only the service queues need manual setup.</p></div>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Service</th><th>Queue</th><th>Exchange</th></tr></thead>
+    <tbody>
+      <tr><td>User</td><td>users</td><td>—</td></tr>
+      <tr><td>Profile</td><td>profiles</td><td>—</td></tr>
+      <tr><td>Training</td><td>training</td><td>training_topic</td></tr>
+      <tr><td>Agriculture</td><td>agric</td><td>agric_topic</td></tr>
+      <tr><td>VSLA</td><td>vsla</td><td>vsla_topic</td></tr>
+      <tr><td>DataMongo</td><td>data_mongo</td><td>— (auto-created)</td></tr>
+      <tr><td>Livestock</td><td>livestock</td><td>livestock_topic</td></tr>
+      <tr><td>Leadership</td><td>leadership</td><td>leadership_topic</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Data Enrichment</h2>
+
+  <p>The DataMongo service aggregates data from all other services into a read-optimised MongoDB store. Enrichment must be run after the databases are seeded to populate the analytics layer.</p>
+
+  <ol style="margin: 0 0 20px 20px; color: var(--ink-mid); font-size: 14px; line-height: 2.2;">
+    <li>Open the DataMongo API docs at <a href="http://localhost:8045/" target="_blank" rel="noopener" style="color: var(--teal-l);">localhost:8045</a></li>
+    <li>Open the Users API docs at <a href="http://localhost:8014/" target="_blank" rel="noopener" style="color: var(--teal-l);">localhost:8014</a> and retrieve the API key</li>
+    <li>In the DataMongo Swagger UI, run each endpoint that contains <code>/enrich</code> — one per service tag</li>
+    <li>Watch the Docker Desktop logs — confirm no errors in the queues and that <code>profileQueue</code> and <code>datamongoQueue</code> are draining cleanly</li>
+    <li>Enrichment is complete when data appears in the DataMongo database at <a href="http://localhost:8097/db/data_db" target="_blank" rel="noopener" style="color: var(--teal-l);">localhost:8097/db/data_db</a></li>
+  </ol>
+
+  <div class="note"><p>Once enrichment is complete, the full API surface is available for local development and testing.</p></div>
+
+  <h2>Staging API Reference</h2>
+
+  <p>Staging Swagger documentation for each service (accessible while connected to the staging environment):</p>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Service</th><th>Swagger URL</th></tr></thead>
+    <tbody>
+      <tr><td>User</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8014/api/documentation" target="_blank" rel="noopener">...:8014/api/documentation</a></td></tr>
+      <tr><td>Profile</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8012/api/documentation" target="_blank" rel="noopener">...:8012/api/documentation</a></td></tr>
+      <tr><td>Training</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8011/api/documentation" target="_blank" rel="noopener">...:8011/api/documentation</a></td></tr>
+      <tr><td>Agriculture</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8013/api/documentation" target="_blank" rel="noopener">...:8013/api/documentation</a></td></tr>
+      <tr><td>VSLA</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8009/api/documentation" target="_blank" rel="noopener">...:8009/api/documentation</a></td></tr>
+      <tr><td>DataMongo</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8045/api/documentation" target="_blank" rel="noopener">...:8045/api/documentation</a></td></tr>
+      <tr><td>Livestock</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8030/api/documentation" target="_blank" rel="noopener">...:8030/api/documentation</a></td></tr>
+      <tr><td>Leadership</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8060/api/documentation" target="_blank" rel="noopener">...:8060/api/documentation</a></td></tr>
+      <tr><td>Check-in</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8090/api/documentation" target="_blank" rel="noopener">...:8090/api/documentation</a></td></tr>
+      <tr><td>Workplan</td><td><a href="http://ec2-3-147-217-86.us-east-2.compute.amazonaws.com:8040/api/documentation" target="_blank" rel="noopener">...:8040/api/documentation</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+<footer>Implementation System &nbsp;&middot;&nbsp; Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
+</body>
+</html>

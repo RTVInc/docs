@@ -3,69 +3,261 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IDS Docs — Raising The Village</title>
+<title>IDS Documentation — Raising The Village</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032;
+    --spruce-2: #1f3d40;
+    --teal: #018793;
+    --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87);
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09);
+    --card-bg: rgba(255,255,255,0.06);
+    --card-bd: rgba(255,255,255,0.11);
+    --hover-bg: rgba(1,135,147,0.15);
+    --hover-bd: rgba(1,135,147,0.4);
+  }
+
   body {
     font-family: 'IBM Plex Sans', system-ui, sans-serif;
-    background: #183032; color: #fff;
+    background: var(--spruce);
+    color: var(--ink);
     min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 32px 20px;
   }
-  .wrap { max-width: 560px; width: 100%; text-align: center; }
-  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
-    font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-    color: #4CB5BE; text-decoration: none; margin-bottom: 36px;
-    opacity: 0.8; transition: opacity 0.15s; }
-  .back:hover { opacity: 1; }
-  .back svg { width: 14px; height: 14px; fill: none; stroke: currentColor;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
-    text-transform: uppercase; color: #4CB5BE; margin-bottom: 14px; }
-  h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 700; line-height: 1.1;
-    margin-bottom: 12px; }
-  .sub { font-size: 16px; opacity: 0.6; margin-bottom: 40px; }
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
-  .card {
-    display: block; text-decoration: none; color: #fff;
-    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13);
-    border-radius: 10px; padding: 28px 20px; transition: background 0.18s;
+
+  /* Header */
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--rule);
   }
-  .card:hover { background: rgba(1,135,147,0.22); border-color: rgba(1,135,147,0.4); }
-  .card .ico { margin-bottom: 12px; display: flex; align-items: center; }
-  .card .label { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-  .card .desc { font-size: 13px; opacity: 0.6; line-height: 1.5; }
-  footer { margin-top: 40px; font-size: 12px; opacity: 0.25; letter-spacing: 0.05em; }
-  @media (max-width: 440px) { .cards { grid-template-columns: 1fr; } }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo img { height: 28px; width: auto; }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Hero */
+  .hero {
+    padding: 56px 32px 48px;
+    border-bottom: 1px solid var(--rule);
+    max-width: 900px;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--teal-l); margin-bottom: 14px;
+  }
+  .hero h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 16px; color: var(--ink-mid); line-height: 1.65; max-width: 640px; }
+
+  /* Wrap */
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* Section heading */
+  .section-hd {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--teal-l); border-bottom: 1px solid var(--rule);
+    padding-bottom: 12px; margin: 48px 0 24px;
+  }
+
+  /* Doc cards */
+  .docs-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px; margin-bottom: 8px;
+  }
+
+  .doc-card {
+    display: flex; flex-direction: column; position: relative;
+    text-decoration: none; color: var(--ink);
+    background: var(--card-bg); border: 1px solid var(--card-bd);
+    border-radius: 12px; padding: 24px 22px;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .doc-card:not(.soon):not(.ext):hover { background: var(--hover-bg); border-color: var(--hover-bd); }
+  .doc-card.ext:hover { background: var(--hover-bg); border-color: var(--hover-bd); }
+  .doc-card.soon { cursor: default; opacity: 0.4; }
+
+  .doc-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(1,135,147,0.2); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .doc-icon svg { width: 17px; height: 17px; stroke: var(--teal-l); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .doc-badge {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px; margin-bottom: 10px; align-self: flex-start;
+  }
+  .badge-live { background: rgba(1,135,147,0.22); color: var(--teal-l); }
+  .badge-soon { background: rgba(255,255,255,0.07); color: var(--ink-muted); }
+  .badge-ext  { background: rgba(234,180,104,0.15); color: #EAB468; }
+
+  .doc-label { font-size: 16px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .doc-for   { font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 8px; }
+  .doc-desc  { font-size: 13px; color: var(--ink-muted); line-height: 1.65; flex: 1; }
+
+  .doc-arrow { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); opacity: 0.22; transition: opacity 0.15s, right 0.15s; font-size: 15px; }
+  .doc-card:not(.soon):hover .doc-arrow { opacity: 0.6; right: 15px; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 560px) {
+    .site-header { padding: 14px 20px; }
+    .hero { padding: 36px 20px 32px; }
+    .wrap { padding: 0 20px 60px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <a class="back" href="../">
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="../">
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     All Documentation
   </a>
-  <div class="eyebrow">Raising The Village · Program Tools</div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Raising The Village · Programme Planning</div>
   <h1>Intelligent Design System</h1>
-  <p class="sub">Documentation &amp; Introduction Materials</p>
-  <div class="cards">
-    <a class="card" href="guide.html">
-      <div class="ico">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      </div>
-      <div class="label">User Guide</div>
-      <div class="desc">Step-by-step reference for all IDS features — upload, design, documents, and settings</div>
-    </a>
-    <a class="card" href="presentation.html">
-      <div class="ico">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      </div>
-      <div class="label">Presentation</div>
-      <div class="desc">12-slide introduction deck for onboarding sessions with keyboard &amp; swipe navigation</div>
-    </a>
-  </div>
-  <footer>IDS v 5.0 &nbsp;·&nbsp; Raising The Village &nbsp;·&nbsp; &copy; 2026</footer>
+  <p>All documentation for the IDS — the platform used to design villages, allocate inputs, set targets, and produce Section Two documents for new programme districts.</p>
 </div>
+
+<div class="wrap">
+
+  <!-- User Documentation -->
+  <div class="section-hd">User Documentation</div>
+  <div class="docs-grid">
+
+    <a class="doc-card" href="guide.html">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <span class="doc-badge badge-live">Live</span>
+      <div class="doc-label">User Guide</div>
+      <div class="doc-for">IDS Users · All Roles</div>
+      <div class="doc-desc">Step-by-step reference for all IDS features — upload, village design, input allocation, reporting, Section Two documents, and settings.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+    <a class="doc-card" href="presentation.html">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <span class="doc-badge badge-live">Live</span>
+      <div class="doc-label">Introduction Deck</div>
+      <div class="doc-for">Onboarding · Stakeholders</div>
+      <div class="doc-desc">12-slide presentation introducing the IDS — what it does, who uses it, and how it fits into the programme design workflow. Keyboard and swipe navigation.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+  </div>
+
+  <!-- API Reference -->
+  <div class="section-hd">API Reference</div>
+  <div class="docs-grid">
+
+    <a class="doc-card ext" href="prediction-api.html">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <span class="doc-badge badge-ext">Available</span>
+      <div class="doc-label">IDS Prediction API</div>
+      <div class="doc-for">Developers · Integrations</div>
+      <div class="doc-desc">REST API reference for the ML prediction service. Documents the <code>/predict/v2/</code> endpoint, full JSON payload schema, response format, and logs endpoint.</div>
+      <div class="doc-arrow">&#8594;</div>
+    </a>
+
+    <div class="doc-card soon">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Backend API Reference</div>
+      <div class="doc-for">Developers · Integrations</div>
+      <div class="doc-desc">Full Postman collection for the IDS backend API. Covers all endpoints for village management, design, allocation, and reporting. Will be published when the collection is shared.</div>
+    </div>
+
+  </div>
+
+  <!-- Technical Reference -->
+  <div class="section-hd">Technical Reference</div>
+  <div class="docs-grid">
+
+    <div class="doc-card soon">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">System Architecture</div>
+      <div class="doc-for">Developers · Engineering</div>
+      <div class="doc-desc">Architecture overview covering the IDS frontend, backend, ML prediction service, and data flows between components.</div>
+    </div>
+
+    <div class="doc-card soon">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Developer Setup</div>
+      <div class="doc-for">Developers · New Team Members</div>
+      <div class="doc-desc">Local development setup guide — cloning the repos, environment variables, running the frontend and backend, and connecting to the prediction service.</div>
+    </div>
+
+    <div class="doc-card soon">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Data Model</div>
+      <div class="doc-for">Developers · Data Team</div>
+      <div class="doc-desc">Entity-relationship diagram and field-level documentation for all IDS database tables — villages, households, inputs, targets, and design outputs.</div>
+    </div>
+
+  </div>
+
+  <!-- Operations -->
+  <div class="section-hd">Operations</div>
+  <div class="docs-grid">
+
+    <div class="doc-card soon">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0"/><path d="M22 12a10 10 0 0 1-10 10"/><path d="M12 2A10 10 0 0 1 22 12"/><path d="M2 12A10 10 0 0 1 12 2"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Deployment Guide</div>
+      <div class="doc-for">DevOps · Engineering</div>
+      <div class="doc-desc">Deployment procedures for the IDS frontend and backend — environment configuration, CI/CD pipelines, and rollback procedures.</div>
+    </div>
+
+    <div class="doc-card soon">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </div>
+      <span class="doc-badge badge-soon">Coming Soon</span>
+      <div class="doc-label">Changelog</div>
+      <div class="doc-for">All Users · Product</div>
+      <div class="doc-desc">Version history and release notes for IDS. Will document feature additions, breaking changes, and migration notes between versions.</div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>IDS v5.0 &nbsp;&middot;&nbsp; Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
 </body>
 </html>

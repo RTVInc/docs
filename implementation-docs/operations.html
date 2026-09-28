@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operations Reference — Implementation · Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --spruce: #183032; --teal: #018793; --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87); --ink-mid: rgba(255,255,255,0.55); --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09); --card-bg: rgba(255,255,255,0.05); --card-bd: rgba(255,255,255,0.1);
+    --amber: #EAB468;
+  }
+  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--spruce); color: var(--ink); min-height: 100vh; }
+  .site-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; border-bottom: 1px solid var(--rule); }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s; }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); max-width: 900px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 15px; color: var(--ink-mid); line-height: 1.65; max-width: 640px; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 32px 80px; }
+  h2 { font-size: 18px; font-weight: 700; margin: 48px 0 20px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+  p { font-size: 14px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 14px; }
+  .note { background: rgba(1,135,147,0.1); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 24px; }
+  .note p { margin-bottom: 0; font-size: 13px; }
+  .ops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .ops-card {
+    display: flex; flex-direction: column;
+    background: var(--card-bg); border: 1px solid var(--card-bd);
+    border-radius: 12px; padding: 22px 20px;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ops-card-link { text-decoration: none; color: inherit; }
+  .ops-card-link:hover .ops-card { background: rgba(1,135,147,0.12); border-color: rgba(1,135,147,0.35); }
+  .ops-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .ops-category {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px; margin-bottom: 12px;
+    background: rgba(1,135,147,0.15); color: var(--teal-l);
+  }
+  .ops-desc { font-size: 13px; color: var(--ink-muted); line-height: 1.65; flex: 1; margin-bottom: 16px; }
+  .ops-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; color: var(--teal-l);
+    text-decoration: none; opacity: 0.85; transition: opacity 0.15s;
+  }
+  .ops-link:hover { opacity: 1; }
+  .ops-link svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ext-icon { width: 12px; height: 12px; }
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+  @media (max-width: 600px) { .site-header { padding: 14px 20px; } .hero, .wrap { padding-left: 20px; padding-right: 20px; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Implementation Docs
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Implementation System · Operations</div>
+  <h1>Operations Reference</h1>
+  <p>Index of all operations documentation for the Implementation backend. These docs live in the <code>implementation-ms-backend</code> GitHub wiki and cover CI/CD, infrastructure, monitoring, and database management.</p>
+</div>
+
+<div class="wrap">
+
+  <div class="note"><p>Operations docs are maintained in the <a href="https://github.com/RTVInc/implementation-ms-backend/wiki" target="_blank" rel="noopener" style="color: var(--teal-l);">implementation-ms-backend GitHub wiki</a>. The links below go directly to each wiki page.</p></div>
+
+  <h2>CI/CD &amp; Deployment</h2>
+  <div class="ops-grid">
+
+    <div class="ops-card">
+      <div class="ops-name">CI/CD Workflow Documentation</div>
+      <span class="ops-category">CI/CD</span>
+      <div class="ops-desc">Comprehensive documentation of GitHub Actions workflows — test matrix, security scans, multi-environment matrix builds, and deployment pipelines for staging and production.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/CI%E2%80%90CD-Workflow-Documentation-(Tests,-Security-scans,-Matrix-builds-and-deploys)" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">GitHub Actions: Deploy to Staging</div>
+      <span class="ops-category">CI/CD</span>
+      <div class="ops-desc">Step-by-step reference for the GitHub Actions workflow that deploys the backend to the staging environment.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/GitHub-Actions:-Deploy-to-Implementation-Backend-Staging" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">Kubernetes Deployment Guide</div>
+      <span class="ops-category">Deployment</span>
+      <div class="ops-desc">Guide for deploying and managing the backend services on the Kubernetes cluster — Helm chart configuration, rolling updates, and rollbacks.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Kubernetes-Deployment-Guide-%E2%80%90-(Implementation-MS-Backend)" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+  </div>
+
+  <h2>Service Mesh &amp; Networking</h2>
+  <div class="ops-grid">
+
+    <div class="ops-card">
+      <div class="ops-name">Istio VM Integration — Setup Guide</div>
+      <span class="ops-category">Networking</span>
+      <div class="ops-desc">Complete working guide for integrating VM-based services into the Istio service mesh running in the Kubernetes cluster.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Istio-VM-Integration-%E2%80%90-Complete-Working-Guide" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">Istio VM Integration — Quick Reference</div>
+      <span class="ops-category">Networking</span>
+      <div class="ops-desc">Condensed reference for common Istio operations — service registration, policy enforcement, and traffic management commands.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Istio-VM-Integration-%E2%80%90-Quick-Reference" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">Istio VM Integration — Troubleshooting</div>
+      <span class="ops-category">Networking</span>
+      <div class="ops-desc">Resolved issues and troubleshooting guide for Istio VM integration — common failure modes and their fixes.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Istio-VM-Integration-%E2%80%90-Troubleshooting-Guide-(Resolved-Issues)" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+  </div>
+
+  <h2>Observability &amp; Monitoring</h2>
+  <div class="ops-grid">
+
+    <div class="ops-card">
+      <div class="ops-name">Logging: Promtail → Loki → Grafana</div>
+      <span class="ops-category">Observability</span>
+      <div class="ops-desc">Setup and configuration of the centralized logging pipeline — Promtail collects container logs, ships to Loki, and Grafana provides querying and dashboards.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Logging-and-Observability:-Promtail-%E2%86%92-Loki-%E2%86%92-Grafana" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">OpenTelemetry Tracing</div>
+      <span class="ops-category">Observability</span>
+      <div class="ops-desc">Distributed request tracing setup using OpenTelemetry instrumentation, forwarding traces to Zipkin for cross-service latency analysis.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/OpenTelemetry-Instrumentation-%E2%80%90-Tracing" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">Zabbix Monitoring &amp; Alerts</div>
+      <span class="ops-category">Monitoring</span>
+      <div class="ops-desc">Configuration of Zabbix hosts and agents for infrastructure-level monitoring — CPU, memory, disk, and service availability alerts.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Zabbix-Hosts-and-Agents-for-Monitoring-and-Alerts" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+  </div>
+
+  <h2>Database Operations</h2>
+  <div class="ops-grid">
+
+    <div class="ops-card">
+      <div class="ops-name">Production Database Backup</div>
+      <span class="ops-category">Database</span>
+      <div class="ops-desc">Setup guide for automated production database backups — scheduling, retention policies, and verification procedures.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Production-Database-Backup-Setup-Guide" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">Database Backup Migration to S3</div>
+      <span class="ops-category">Database</span>
+      <div class="ops-desc">Guide for migrating database backups to AWS S3 — bucket configuration, IAM permissions, and automated upload scripts.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Database-Backup-Migration-to-AWS-S3-Guide" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">MySQL Data Sync Procedure</div>
+      <span class="ops-category">Database</span>
+      <div class="ops-desc">Step-by-step procedure for syncing data between environments using phpMyAdmin — exporting, importing, and verifying table integrity.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/MySQL-Data-Sync-Procedure-(Using-phpMyAdmin)" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">Migrating EBS Volumes gp2 → gp3</div>
+      <span class="ops-category">Infrastructure</span>
+      <div class="ops-desc">Procedure for upgrading AWS EBS storage volumes from gp2 to gp3 — cost reduction and performance improvement without downtime.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/Migrating-EBS-Volumes-from-gp2-to-gp3" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+  </div>
+
+  <h2>Security</h2>
+  <div class="ops-grid">
+
+    <div class="ops-card">
+      <div class="ops-name">AWS CloudTrail &amp; GuardDuty Setup</div>
+      <span class="ops-category">Security</span>
+      <div class="ops-desc">Setting up AWS CloudTrail audit logging and GuardDuty threat detection using CloudFormation templates — enabling governance, compliance, and threat intelligence.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/AWS-CloudTrail-&-GuardDuty-Setup-with-CloudFormation" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+    <div class="ops-card">
+      <div class="ops-name">MicroK8s Worker Node Garbage Collection</div>
+      <span class="ops-category">Infrastructure</span>
+      <div class="ops-desc">Automated setup for container image garbage collection on MicroK8s worker nodes to prevent disk exhaustion.</div>
+      <a class="ops-link" href="https://github.com/RTVInc/implementation-ms-backend/wiki/MicroK8s-Worker-Node-Garbage-Collection-Setup-Guide" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GitHub Wiki
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>Implementation System &nbsp;&middot;&nbsp; Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
+</body>
+</html>

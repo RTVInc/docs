@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IDS Prediction API — Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032;
+    --teal: #018793;
+    --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87);
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09);
+    --card-bg: rgba(255,255,255,0.05);
+    --card-bd: rgba(255,255,255,0.1);
+    --code-bg: rgba(0,0,0,0.35);
+    --amber: #EAB468;
+    --green: #5BC878;
+    --red: #E06C75;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--spruce);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--rule);
+  }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); max-width: 900px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 15px; color: var(--ink-mid); line-height: 1.65; max-width: 600px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .meta-chip {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; background: rgba(255,255,255,0.07); color: var(--ink-mid);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .meta-chip.teal { background: rgba(1,135,147,0.18); color: var(--teal-l); border-color: rgba(1,135,147,0.3); }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 32px 80px; }
+
+  h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin: 48px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 15px; font-weight: 700; margin: 28px 0 10px; }
+
+  p { font-size: 14px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 16px; }
+
+  /* Method + endpoint row */
+  .endpoint {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--code-bg); border: 1px solid var(--card-bd);
+    border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;
+    font-family: 'IBM Plex Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  .method {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+    padding: 3px 8px; border-radius: 4px; flex-shrink: 0;
+  }
+  .method.post { background: rgba(91,200,120,0.2); color: var(--green); }
+  .method.get  { background: rgba(76,181,190,0.2); color: var(--teal-l); }
+  .path { font-size: 14px; color: var(--ink); }
+  .path-desc { font-size: 12px; color: var(--ink-muted); margin-left: auto; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+  th { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-l); padding: 8px 14px; border-bottom: 1px solid var(--rule); text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--ink-mid); vertical-align: top; line-height: 1.55; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* Code blocks */
+  pre {
+    background: var(--code-bg); border: 1px solid var(--card-bd);
+    border-radius: 8px; padding: 18px 20px; overflow-x: auto;
+    font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 12.5px;
+    line-height: 1.65; color: var(--ink); margin-bottom: 24px;
+  }
+  code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 12px; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  /* Note callout */
+  .note {
+    background: rgba(1,135,147,0.1); border-left: 3px solid var(--teal);
+    border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 20px;
+  }
+  .note p { color: var(--ink-mid); margin-bottom: 0; font-size: 13px; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 14px 20px; }
+    .hero, .wrap { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    IDS Docs
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">IDS · API Reference</div>
+  <h1>IDS Prediction API v2</h1>
+  <p>Predicts household agriculture value (USD) for Year One and Year Two from household survey JSON input. Used internally by the IDS to generate production projections for village design.</p>
+  <div class="meta-row">
+    <span class="meta-chip teal">REST API</span>
+    <span class="meta-chip">Base URL: ids.api.nonproftinnovations.io</span>
+    <span class="meta-chip">Content-Type: application/json</span>
+    <span class="meta-chip">Authentication: None</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <h2>Endpoints</h2>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>POST</td><td>/predict/v2/</td><td>Create a prediction — returns Year 1 and Year 2 agriculture value projections</td></tr>
+      <tr><td>GET</td><td>/predict/v2/get-all-prediction</td><td>List all predictions with inputs, outputs, and metadata</td></tr>
+      <tr><td>GET</td><td>/predict/v2/logs</td><td>List prediction logs (newest first)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>POST /predict/v2/</h2>
+  <div class="endpoint">
+    <span class="method post">POST</span>
+    <span class="path">https://ids.api.nonproftinnovations.io/predict/v2/</span>
+  </div>
+
+  <p>Submits household data and returns Year 1 and Year 2 agriculture value predictions. Two models are available: <strong>Regional</strong> (include <code>region</code> in payload) and <strong>General</strong> (omit <code>region</code>).</p>
+
+  <div class="note"><p>The regional model was trained with region as a feature. When projecting outside supported regions, omit <code>region</code> to use the general model instead.</p></div>
+
+  <h3>Request payload fields</h3>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>region</td><td>string</td><td>No</td><td>e.g. <code>"east"</code>. Omit to use the general model.</td></tr>
+      <tr><td>implementation_type</td><td>string</td><td>Yes</td><td><code>"Standard"</code> or <code>"Replication"</code></td></tr>
+      <tr><td>Land_size_agriculture</td><td>number</td><td>No</td><td>Agricultural land size in acres</td></tr>
+      <tr><td>Land_size_for_HomesteadAcres</td><td>number</td><td>No</td><td>Homestead land size in acres</td></tr>
+      <tr><td>GPS_Altitude</td><td>number</td><td>No</td><td>GPS altitude at household location</td></tr>
+      <tr><td>Beans_total_yield</td><td>number</td><td>No</td><td>Total beans yield (kg)</td></tr>
+      <tr><td>Maize_total_yield</td><td>number</td><td>No</td><td>Total maize yield (kg)</td></tr>
+      <tr><td>Coffee_total_yield</td><td>number</td><td>No</td><td>Total coffee yield (kg)</td></tr>
+      <tr><td>Cassava_total_yield</td><td>number</td><td>No</td><td>Total cassava yield (kg)</td></tr>
+      <tr><td>Food_banana_total_yield</td><td>number</td><td>No</td><td>Total food banana yield (kg)</td></tr>
+      <tr><td>Sweet_potatoes_total_yield</td><td>number</td><td>No</td><td>Total sweet potatoes yield (kg)</td></tr>
+      <tr><td>beans_kgs_hh_seed</td><td>number</td><td>No</td><td>Beans seed distributed (kg)</td></tr>
+      <tr><td>maize_kgs_hh_seed</td><td>number</td><td>No</td><td>Maize seed distributed (kg)</td></tr>
+      <tr><td>ground_nuts_kgs_hh_seed</td><td>number</td><td>No</td><td>Ground nuts seed distributed (kg)</td></tr>
+      <tr><td>irish_potatoes_bags_hh_seed</td><td>number</td><td>No</td><td>Irish potato bags distributed</td></tr>
+      <tr><td>hoes_tools</td><td>number</td><td>No</td><td>Hoes distributed</td></tr>
+      <tr><td>pangas_tools</td><td>number</td><td>No</td><td>Pangas distributed</td></tr>
+      <tr><td>spades_tools</td><td>number</td><td>No</td><td>Spades distributed</td></tr>
+      <tr><td>trowels_tools</td><td>number</td><td>No</td><td>Trowels distributed</td></tr>
+      <tr><td>pick_axes_tools</td><td>number</td><td>No</td><td>Pick axes distributed</td></tr>
+      <tr><td>forked_hoes_tools</td><td>number</td><td>No</td><td>Forked hoes distributed</td></tr>
+      <tr><td>spray_pumps_tools</td><td>number</td><td>No</td><td>Spray pumps distributed</td></tr>
+      <tr><td>wheelbarrows_tools</td><td>number</td><td>No</td><td>Wheelbarrows distributed</td></tr>
+      <tr><td>watering_cans_tools</td><td>number</td><td>No</td><td>Watering cans distributed</td></tr>
+      <tr><td>sacks_liquid_manure</td><td>number</td><td>No</td><td>Sacks of liquid manure</td></tr>
+      <tr><td>plastic_tanks_120_ltrs_liquid_manure</td><td>number</td><td>No</td><td>120L plastic tanks for liquid manure</td></tr>
+      <tr><td>garlic_kgs_organic_pesticides</td><td>number</td><td>No</td><td>Garlic (kg) for organic pesticide</td></tr>
+      <tr><td>ginger_kgs_organic_pesticides</td><td>number</td><td>No</td><td>Ginger (kg) for organic pesticide</td></tr>
+      <tr><td>Time_to_collect_Water_for_Household_use_Minutes</td><td>number</td><td>No</td><td>Water collection time (minutes)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Example — Regional model</h3>
+  <pre><code>curl -X POST "https://ids.api.nonproftinnovations.io/predict/v2/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "region": "east",
+    "implementation_type": "Replication",
+    "Land_size_agriculture": 2.5,
+    "hoes_tools": 1,
+    "Beans_total_yield": 80
+  }'</code></pre>
+
+  <h3>Example — General model</h3>
+  <pre><code>curl -X POST "https://ids.api.nonproftinnovations.io/predict/v2/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "implementation_type": "Standard",
+    "Land_size_agriculture": 1.8,
+    "Maize_total_yield": 120
+  }'</code></pre>
+
+  <h3>Response</h3>
+  <pre><code>{
+  "id": 14,
+  "prediction_year_one": 153.90,
+  "prediction_year_two": 634.02,
+  "region": "east",
+  "implementation_type": "Replication",
+  "created_at": "2026-05-25T12:06:39Z"
+}</code></pre>
+
+  <h2>GET /predict/v2/get-all-prediction</h2>
+  <div class="endpoint">
+    <span class="method get">GET</span>
+    <span class="path">https://ids.api.nonproftinnovations.io/predict/v2/get-all-prediction</span>
+  </div>
+  <p>Returns a JSON array of all predictions. Each record includes the original request payload plus <code>prediction_year_one</code>, <code>prediction_year_two</code>, <code>id</code>, and <code>created_at</code>. General-model predictions have <code>"region": null</code>.</p>
+
+  <h2>GET /predict/v2/logs</h2>
+  <div class="endpoint">
+    <span class="method get">GET</span>
+    <span class="path">https://ids.api.nonproftinnovations.io/predict/v2/logs</span>
+  </div>
+  <p>Returns prediction logs, newest first.</p>
+
+  <h3>Log response fields</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>id</td><td>integer</td><td>Log entry ID</td></tr>
+      <tr><td>created_at</td><td>ISO 8601 string</td><td>Timestamp of the prediction</td></tr>
+      <tr><td>status</td><td>string</td><td><code>success</code> or <code>failed</code></td></tr>
+      <tr><td>prediction_id</td><td>integer</td><td>ID of the associated prediction record</td></tr>
+      <tr><td>prediction_year_one</td><td>number</td><td>Predicted agriculture value — Year 1 (USD)</td></tr>
+      <tr><td>prediction_year_two</td><td>number</td><td>Predicted agriculture value — Year 2 (USD)</td></tr>
+      <tr><td>request_payload</td><td>object</td><td>The original input sent to the model</td></tr>
+      <tr><td>message</td><td>string</td><td>Which model was used, e.g. "Prediction created (regional model)"</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+<footer>IDS Prediction API v2 &nbsp;&middot;&nbsp; Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
+</body>
+</html>

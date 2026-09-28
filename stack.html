@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Technology Stack — Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032; --spruce-2: #1f3d40;
+    --teal: #018793; --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87); --ink-mid: rgba(255,255,255,0.55); --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09); --card-bg: rgba(255,255,255,0.05); --card-bd: rgba(255,255,255,0.1);
+    --amber: #EAB468; --green: #5BC878;
+  }
+
+  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--spruce); color: var(--ink); min-height: 100vh; }
+
+  .site-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; border-bottom: 1px solid var(--rule); }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s; }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 16px; color: var(--ink-mid); line-height: 1.65; max-width: 640px; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* Section heading */
+  .section-hd { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal-l); border-bottom: 1px solid var(--rule); padding-bottom: 12px; margin: 56px 0 28px; }
+
+  h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .system-sub { font-size: 13px; color: var(--ink-muted); margin-bottom: 24px; }
+
+  p { font-size: 14px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 14px; }
+
+  /* Tech grid */
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .tech-card {
+    background: var(--card-bg); border: 1px solid var(--card-bd);
+    border-radius: 10px; padding: 18px 20px;
+  }
+  .tech-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .tech-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px; margin-bottom: 10px;
+  }
+  .tag-lang   { background: rgba(1,135,147,0.18); color: var(--teal-l); }
+  .tag-infra  { background: rgba(234,180,104,0.14); color: var(--amber); }
+  .tag-db     { background: rgba(91,200,120,0.15); color: var(--green); }
+  .tag-tool   { background: rgba(255,255,255,0.08); color: var(--ink-mid); }
+  .tag-docs   { background: rgba(1,135,147,0.12); color: var(--teal-l); }
+
+  .tech-desc { font-size: 13px; color: var(--ink-muted); line-height: 1.6; }
+  .tech-why  { font-size: 12px; color: var(--ink-muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); line-height: 1.6; }
+  .tech-why strong { color: var(--ink-mid); }
+
+  /* LOC summary */
+  .loc-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .loc-card { background: var(--card-bg); border: 1px solid var(--card-bd); border-radius: 10px; padding: 18px 20px; }
+  .loc-repo { font-size: 12px; font-weight: 700; color: var(--teal-l); margin-bottom: 6px; font-family: monospace; }
+  .loc-lang { font-size: 13px; color: var(--ink-mid); margin-bottom: 2px; }
+  .loc-num  { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .loc-est  { font-size: 11px; color: var(--ink-muted); }
+
+  /* Docs hub section */
+  .docs-reason { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .reason-card { background: var(--card-bg); border: 1px solid var(--card-bd); border-radius: 10px; padding: 18px 20px; }
+  .reason-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .reason-body { font-size: 13px; color: var(--ink-muted); line-height: 1.65; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 600px) { .site-header { padding: 14px 20px; } .hero, .wrap { padding-left: 20px; padding-right: 20px; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="./">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="./">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    All Documentation
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Raising The Village · Reference</div>
+  <h1>Technology Stack</h1>
+  <p>Tools, frameworks, and infrastructure choices behind the IDS and Implementation systems, and the documentation hub itself — with the reasoning behind each decision.</p>
+</div>
+
+<div class="wrap">
+
+  <!-- IDS -->
+  <div class="section-hd">Intelligent Design System (IDS)</div>
+  <h2>IDS</h2>
+  <p class="system-sub">The platform used by programme design teams to design villages, set input targets, and produce Section Two planning documents.</p>
+
+  <div class="tech-grid">
+
+    <div class="tech-card">
+      <div class="tech-name">React + TypeScript</div>
+      <span class="tech-tag tag-lang">Frontend</span>
+      <div class="tech-desc">Web application for village design, data uploads, input allocation, and document generation.</div>
+      <div class="tech-why"><strong>Why:</strong> Component model maps well to the IDS workflow wizard; TypeScript catches data contract errors early in a domain with complex nested input schemas.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">Node.js + TypeScript</div>
+      <span class="tech-tag tag-lang">Backend</span>
+      <div class="tech-desc">REST API backend handling data processing, user management, and Section Two document assembly.</div>
+      <div class="tech-why"><strong>Why:</strong> Consistent language across the full stack. Reduces context-switching and allows shared type definitions between frontend and backend contracts.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">IDS Prediction API (Python)</div>
+      <span class="tech-tag tag-lang">ML Service</span>
+      <div class="tech-desc">Machine learning model that predicts household agriculture value (USD) for Year 1 and Year 2 from survey inputs. Exposes a REST API at <code style="font-size:11px">ids.api.nonproftinnovations.io</code>.</div>
+      <div class="tech-why"><strong>Why:</strong> Python is the standard for ML model serving. Isolating the model as a separate service means the backend can call it without coupling the prediction logic to the main codebase.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">Postman</div>
+      <span class="tech-tag tag-tool">API Docs</span>
+      <div class="tech-desc">Postman collection documents the IDS backend API. Shared with the team as a published collection.</div>
+      <div class="tech-why"><strong>Why:</strong> The team already uses Postman for manual testing. Reusing it as documentation avoids maintaining a separate spec format.</div>
+    </div>
+
+  </div>
+
+  <!-- Implementation -->
+  <div class="section-hd">Implementation System</div>
+  <h2>Implementation System</h2>
+  <p class="system-sub">The field operations platform — mobile app for data collection, web dashboard for management and reporting, and a distributed microservices backend.</p>
+
+  <div class="tech-grid">
+
+    <div class="tech-card">
+      <div class="tech-name">Flutter + Dart</div>
+      <span class="tech-tag tag-lang">Mobile App</span>
+      <div class="tech-desc">Cross-platform mobile application for field data collection — works on Android and iOS from a single codebase.</div>
+      <div class="tech-why"><strong>Why:</strong> Single codebase for Android and iOS eliminates duplication. Flutter's offline-first architecture and local SQLite support are critical for field workers who operate with intermittent connectivity.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">React + TypeScript</div>
+      <span class="tech-tag tag-lang">Web Platform</span>
+      <div class="tech-desc">Office-facing dashboard for programme oversight, analytics dashboards, VSF approvals, and user management.</div>
+      <div class="tech-why"><strong>Why:</strong> Consistent with the IDS frontend stack. Large ecosystem for data visualisation components needed for dashboards.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">PHP / Laravel</div>
+      <span class="tech-tag tag-lang">Backend (11 services)</span>
+      <div class="tech-desc">11 Laravel microservices, each owning its domain — User, Profile, Training, Agriculture, VSLA, DataMongo, Livestock, Leadership, Check-in, Workplan, Notification.</div>
+      <div class="tech-why"><strong>Why:</strong> Laravel's Eloquent ORM, built-in queue integration, and Swagger generation (l5-swagger) make it productive for API-first microservice development. Mature ecosystem for the complex domain logic this system requires.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">RabbitMQ</div>
+      <span class="tech-tag tag-infra">Message Queue</span>
+      <div class="tech-desc">Async message bus for event-driven communication between services. Services publish domain events; the DataMongo service subscribes and builds the analytics read store.</div>
+      <div class="tech-why"><strong>Why:</strong> Decouples domain services from the analytics layer — services don't need to know about downstream consumers. Queues absorb traffic spikes from bulk field data uploads.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">MySQL</div>
+      <span class="tech-tag tag-db">Primary Database</span>
+      <div class="tech-desc">Relational write store for all domain services. Each microservice has its own MySQL database (database-per-service pattern).</div>
+      <div class="tech-why"><strong>Why:</strong> ACID compliance required for financial data (VSLA savings, VSF loans). Separate databases per service enforce domain boundaries and prevent cross-service data coupling.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">MongoDB (DataMongo)</div>
+      <span class="tech-tag tag-db">Analytics Read Store</span>
+      <div class="tech-desc">Aggregated read store populated via RabbitMQ events. Serves all web dashboard queries and analytics endpoints.</div>
+      <div class="tech-why"><strong>Why:</strong> Document model matches the denormalised structure needed for fast dashboard queries that span multiple domain entities. Separating read and write stores (CQRS pattern) keeps analytics queries from competing with write throughput.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">Redis</div>
+      <span class="tech-tag tag-db">Cache</span>
+      <div class="tech-desc">In-memory cache for frequently accessed data — user sessions, permission checks, and hot analytics queries.</div>
+      <div class="tech-why"><strong>Why:</strong> Reduces repeated database round-trips for session validation on every API request. Critical at scale when thousands of field submissions arrive during programme windows.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">Kubernetes + Tyk Gateway</div>
+      <span class="tech-tag tag-infra">Orchestration</span>
+      <div class="tech-desc">3-node Kubernetes cluster with HAProxy/Nginx load balancing. Tyk API Gateway routes requests to microservices by path prefix. Each service runs at 3 replicas.</div>
+      <div class="tech-why"><strong>Why:</strong> 3-replica deployments allow rolling updates without downtime. Tyk centralises authentication, rate limiting, and routing without coupling this logic into each service.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">AWS S3</div>
+      <span class="tech-tag tag-infra">Object Storage</span>
+      <div class="tech-desc">Database backup storage. MySQL backups are exported and uploaded to S3 on a scheduled basis.</div>
+      <div class="tech-why"><strong>Why:</strong> Durable, geographically-redundant off-server backup storage. Lifecycle policies automatically expire old backups and reduce cost.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">Loki + Promtail + Grafana</div>
+      <span class="tech-tag tag-tool">Logging</span>
+      <div class="tech-desc">Centralised log aggregation. Promtail collects logs from all containers and ships to Loki; Grafana provides querying and dashboards.</div>
+      <div class="tech-why"><strong>Why:</strong> Lighter-weight than the ELK stack for this scale. Log labels enable efficient filtering by service and environment without full-text indexing overhead.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">Swagger (l5-swagger)</div>
+      <span class="tech-tag tag-tool">API Docs</span>
+      <div class="tech-desc">Auto-generated Swagger UI for all 10 backend microservices. Annotations in the PHP source code are compiled into an OpenAPI spec at build time.</div>
+      <div class="tech-why"><strong>Why:</strong> Documentation stays in sync with the code — annotations live next to the endpoints they document. No separate spec maintenance required.</div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-name">GitHub Actions</div>
+      <span class="tech-tag tag-tool">CI/CD</span>
+      <div class="tech-desc">Automated testing, security scanning, and deployment pipelines for all system components.</div>
+      <div class="tech-why"><strong>Why:</strong> Native GitHub integration means no separate CI infrastructure to maintain. Matrix builds run tests across multiple PHP and Node versions in parallel.</div>
+    </div>
+
+  </div>
+
+  <!-- Codebase size -->
+  <div class="section-hd">Codebase Size</div>
+  <p style="margin-bottom: 20px;">Approximate lines of code per repository, derived from GitHub language byte counts at ~45 bytes per line. Exact counts can be obtained by running <code style="font-size:12px; background:rgba(255,255,255,0.07); padding:1px 5px; border-radius:3px;">cloc .</code> on a local clone.</p>
+
+  <div class="loc-row">
+    <div class="loc-card">
+      <div class="loc-repo">IDS-web-app</div>
+      <div class="loc-lang">TypeScript (97%)</div>
+      <div class="loc-num">~210,000</div>
+      <div class="loc-est">lines &nbsp;&bull;&nbsp; 9.5 MB source</div>
+    </div>
+    <div class="loc-card">
+      <div class="loc-repo">ids-backend</div>
+      <div class="loc-lang">TypeScript (95%)</div>
+      <div class="loc-num">~133,000</div>
+      <div class="loc-est">lines &nbsp;&bull;&nbsp; 6.0 MB source</div>
+    </div>
+    <div class="loc-card">
+      <div class="loc-repo">implementationApplication</div>
+      <div class="loc-lang">Dart (100%)</div>
+      <div class="loc-num">~197,000</div>
+      <div class="loc-est">lines &nbsp;&bull;&nbsp; 8.9 MB source</div>
+    </div>
+    <div class="loc-card">
+      <div class="loc-repo">implementation-ms-backend</div>
+      <div class="loc-lang">PHP (86%), JavaScript (11%)</div>
+      <div class="loc-num">~342,000</div>
+      <div class="loc-est">lines &nbsp;&bull;&nbsp; 17.9 MB source</div>
+    </div>
+    <div class="loc-card">
+      <div class="loc-repo">implementation-ms-web</div>
+      <div class="loc-lang">TypeScript (94%)</div>
+      <div class="loc-num">~79,000</div>
+      <div class="loc-est">lines &nbsp;&bull;&nbsp; 3.8 MB source</div>
+    </div>
+  </div>
+
+  <!-- Documentation Hub -->
+  <div class="section-hd">Documentation Hub</div>
+  <h2>How this hub is built</h2>
+  <p class="system-sub">The documentation hub at <code style="font-size:12px; background:rgba(255,255,255,0.07); padding:1px 5px; border-radius:3px;">rtvinc.github.io/docs</code> is a static site served from the <code style="font-size:12px; background:rgba(255,255,255,0.07); padding:1px 5px; border-radius:3px;">RTVInc/docs</code> repository main branch via GitHub Pages.</p>
+
+  <div class="docs-reason">
+
+    <div class="reason-card">
+      <div class="reason-title">Self-contained HTML files</div>
+      <div class="reason-body">Each document is a single <code>.html</code> file with all CSS, fonts, and images embedded as base64 data URIs. No build step, no <code>node_modules</code>, no CDN dependencies for user guides.<br><br>Field workers in rural Uganda need documents that work without internet. Self-contained files can be downloaded once and opened offline indefinitely.</div>
+    </div>
+
+    <div class="reason-card">
+      <div class="reason-title">GitHub Pages</div>
+      <div class="reason-body">Hosted directly from the <code>main</code> branch of <code>RTVInc/docs</code>. Commits to <code>main</code> are live within ~30 seconds.<br><br>No separate hosting infrastructure to maintain. Version history is the git log. Rollbacks are git reverts. Access control is GitHub org membership.</div>
+    </div>
+
+    <div class="reason-card">
+      <div class="reason-title">IBM Plex Sans</div>
+      <div class="reason-body">The primary typeface for all user guides and index pages — embedded as a base64 <code>@font-face</code> in the larger guide documents.<br><br>Clean, professional, and purpose-built for technical documentation. The monospace companion (IBM Plex Mono) is used for code blocks and API reference content.</div>
+    </div>
+
+    <div class="reason-card">
+      <div class="reason-title">RTV brand palette</div>
+      <div class="reason-body">Dark spruce (<code>#183032</code>) background with teal (<code>#018793</code> / <code>#4CB5BE</code>) accents and amber (<code>#EAB468</code>) for highlights.<br><br>Dark theme reduces eye strain during field use on mobile devices in varying light conditions. Consistent with the RTV brand identity across all systems.</div>
+    </div>
+
+    <div class="reason-card">
+      <div class="reason-title">No JavaScript frameworks</div>
+      <div class="reason-body">Pure HTML and CSS for all structural and visual elements. JavaScript is used sparingly — only for the sidebar search, lightbox modal, and presentation navigation.<br><br>Zero build toolchain means any team member can open a file in a text editor and make a change. No framework upgrades, no dependency vulnerabilities to patch.</div>
+    </div>
+
+    <div class="reason-card">
+      <div class="reason-title">GitHub Releases for versioning</div>
+      <div class="reason-body">Significant updates are tagged as GitHub Releases (e.g. <code>imp-v1.4.0</code>) with all four guide files attached as downloadable assets.<br><br>Users who need a specific version for reference can download it directly. The release tag provides a stable permalink to a known-good state of the documentation.</div>
+    </div>
+
+    <div class="reason-card">
+      <div class="reason-title">Technical docs use CDN where appropriate</div>
+      <div class="reason-body">Architecture pages load Mermaid.js from a CDN to render infrastructure diagrams. Developer-facing reference pages are not used offline so this trade-off is acceptable.<br><br>Keeps the architecture docs maintainable — Mermaid source is readable plain text in the HTML, not pre-rendered SVG blobs.</div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
+</body>
+</html>
