@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mobile Component Reference — Implementation · Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032; --teal: #018793; --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87); --ink-mid: rgba(255,255,255,0.55); --ink-muted: rgba(255,255,255,0.38);
+    --rule: rgba(255,255,255,0.09); --card-bg: rgba(255,255,255,0.05); --card-bd: rgba(255,255,255,0.1);
+    --amber: #EAB468; --green: #5BC878; --red: #E05555;
+  }
+
+  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--spruce); color: var(--ink); min-height: 100vh; }
+
+  .site-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; border-bottom: 1px solid var(--rule); }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s; }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 15px; color: var(--ink-mid); line-height: 1.65; max-width: 640px; }
+
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 180px); }
+  .sidebar { padding: 28px 20px; border-right: 1px solid var(--rule); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-label { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 10px; margin-top: 22px; }
+  .sidebar-label:first-child { margin-top: 0; }
+  .sidebar a { display: block; font-size: 13px; color: var(--ink-mid); text-decoration: none; padding: 3px 0; line-height: 1.5; transition: color 0.15s; }
+  .sidebar a:hover { color: var(--ink); }
+  .content { padding: 40px 40px 80px; max-width: 880px; }
+
+  /* ── Section headings ── */
+  h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin: 56px 0 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
+  h2:first-child { margin-top: 0; border-top: none; }
+  h3 { font-size: 15px; font-weight: 700; margin: 32px 0 10px; color: var(--ink); }
+  p { font-size: 14px; color: var(--ink-mid); line-height: 1.75; margin-bottom: 14px; }
+  a { color: var(--teal-l); }
+
+  /* ── Code ── */
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; }
+  pre { background: rgba(0,0,0,0.35); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin-bottom: 18px; }
+  pre code { background: none; padding: 0; font-size: 13px; line-height: 1.65; color: rgba(255,255,255,0.82); }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--rule); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; min-width: 400px; }
+  th { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-l); padding: 9px 14px; border-bottom: 1px solid var(--rule); text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: var(--ink-mid); line-height: 1.55; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: 11.5px; }
+  td strong { color: var(--ink); }
+
+  /* ── Component cards ── */
+  .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; margin-bottom: 8px; }
+  .comp-card { background: var(--card-bg); border: 1px solid var(--card-bd); border-radius: 10px; padding: 20px 22px; }
+  .comp-name { font-size: 15px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; color: var(--teal-l); }
+  .comp-file { font-size: 11px; color: var(--ink-muted); margin-bottom: 10px; }
+  .comp-desc { font-size: 13px; color: var(--ink-mid); line-height: 1.65; margin-bottom: 12px; }
+  .comp-usage { font-size: 12px; }
+
+  /* ── Token swatches ── */
+  .token-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .token-row { display: flex; align-items: center; gap: 12px; background: var(--card-bg); border: 1px solid var(--card-bd); border-radius: 8px; padding: 10px 14px; }
+  .swatch { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+  .token-name { font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--teal-l); }
+  .token-value { font-size: 11px; color: var(--ink-muted); }
+
+  /* ── Spacing scale ── */
+  .spacing-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .spacing-bar { background: rgba(1,135,147,0.35); height: 10px; border-radius: 3px; }
+  .spacing-label { font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--teal-l); width: 56px; flex-shrink: 0; }
+  .spacing-px { font-size: 12px; color: var(--ink-muted); }
+
+  /* ── Callout ── */
+  .note { background: rgba(1,135,147,0.1); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 20px; }
+  .note p { font-size: 13px; margin-bottom: 0; }
+
+  /* ── Source path chip ── */
+  .src-path { display: inline-block; font-size: 11px; font-family: 'IBM Plex Mono', monospace; background: rgba(255,255,255,0.06); color: var(--ink-muted); padding: 2px 8px; border-radius: 4px; margin-bottom: 16px; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .sidebar { display: none; } .content { padding: 28px 20px 60px; } }
+  @media (max-width: 600px) { .site-header { padding: 14px 20px; } .hero { padding: 36px 20px 32px; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Implementation Docs
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Implementation System · Mobile · Technical Reference</div>
+  <h1>Mobile Component Reference</h1>
+  <p>Design system components, tokens, and shared UI building blocks for the Flutter mobile application. All widgets live in <code>lib/ui/shared/design_system/</code> or <code>lib/ui/components/</code>. Figma source: <code>FG7dP4ZcdhpOMHqU0QwO0Z</code>.</p>
+</div>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-label">Tokens</div>
+  <a href="#colors">Colors</a>
+  <a href="#spacing">Spacing</a>
+  <a href="#radius">Border radius</a>
+  <a href="#typography">Typography</a>
+  <div class="sidebar-label">Core Components</div>
+  <a href="#button">RTVButton</a>
+  <a href="#alert">RTVAlert</a>
+  <a href="#input">RTVInput</a>
+  <a href="#text">RTVText</a>
+  <a href="#modal">RTVModalCard</a>
+  <div class="sidebar-label">Navigation</div>
+  <a href="#app-bar">RTVAppBar</a>
+  <a href="#bottom-nav">RTVBottomNav</a>
+  <a href="#tab-bar">RTVUnderlineTabBar</a>
+  <div class="sidebar-label">Layout & Utility</div>
+  <a href="#container">RTVContainer</a>
+  <a href="#gap">RTVGap</a>
+  <a href="#press-scale">RTVPressScale</a>
+  <a href="#breakpoints">RTVBreakpoints</a>
+  <div class="sidebar-label">Form Components</div>
+  <a href="#form-fields">Form fields</a>
+  <a href="#search-field">RTVSearchField</a>
+  <a href="#choice-question">RTVChoiceQuestion</a>
+  <a href="#filter-select">RTVFilterSelect</a>
+  <div class="sidebar-label">Display</div>
+  <a href="#empty-state">RTVEmptyState</a>
+  <a href="#message-callout">RTVMessageCallout</a>
+  <a href="#report-status">Report status</a>
+  <a href="#connectivity">Connectivity</a>
+</nav>
+
+<main class="content">
+
+  <!-- ── TOKENS ── -->
+  <h2 id="colors">Colors</h2>
+  <div class="src-path">lib/util/theme/color_schema.dart</div>
+  <p>All colors are defined in <code>RTVColors</code> and <code>RTVIAPPTHEME</code>. New screens use <code>RTVColors</code>. Legacy screens may still reference <code>RTVIAPPTHEME</code> — do not break those references.</p>
+
+  <h3>Brand</h3>
+  <div class="token-grid">
+    <div class="token-row"><div class="swatch" style="background:#00363B"></div><div><div class="token-name">RTVColors.primary</div><div class="token-value">#00363B</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#018793"></div><div><div class="token-name">RTVColors.secondary</div><div class="token-value">#018793</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#015158"></div><div><div class="token-name">RTVColors.borderPrimary</div><div class="token-value">#015158</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#EAB468"></div><div><div class="token-name">RTVColors.accentOchre</div><div class="token-value">#EAB468</div></div></div>
+  </div>
+
+  <h3>Primary palette (teal ramp)</h3>
+  <div class="token-grid">
+    <div class="token-row"><div class="swatch" style="background:#72CBD4"></div><div><div class="token-name">primary300</div><div class="token-value">#72CBD4</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#4CB5BE"></div><div><div class="token-name">primary400</div><div class="token-value">#4CB5BE</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#279EA9"></div><div><div class="token-name">primary500</div><div class="token-value">#279EA9</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#018793"></div><div><div class="token-name">primary600</div><div class="token-value">#018793</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#016C76"></div><div><div class="token-name">primary700</div><div class="token-value">#016C76</div></div></div>
+  </div>
+
+  <h3>State colors</h3>
+  <div class="token-grid">
+    <div class="token-row"><div class="swatch" style="background:#538B37"></div><div><div class="token-name">RTVColors.success</div><div class="token-value">#538B37</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#F08355"></div><div><div class="token-name">RTVColors.warning</div><div class="token-value">#F08355</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#C1121F"></div><div><div class="token-name">RTVColors.error</div><div class="token-value">#C1121F</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#4CB5BE"></div><div><div class="token-name">RTVColors.info</div><div class="token-value">#4CB5BE</div></div></div>
+  </div>
+
+  <h3>Text & surfaces</h3>
+  <div class="token-grid">
+    <div class="token-row"><div class="swatch" style="background:#160904"></div><div><div class="token-name">RTVColors.textBody</div><div class="token-value">#160904</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#46595B"></div><div><div class="token-name">RTVColors.textSecondary</div><div class="token-value">#46595B</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#F9F9F9"></div><div><div class="token-name">RTVColors.surfacePage</div><div class="token-value">#F9F9F9</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#E7EFEE"></div><div><div class="token-name">RTVColors.surfaceMessage</div><div class="token-value">#E7EFEE</div></div></div>
+    <div class="token-row"><div class="swatch" style="background:#E8EAEA"></div><div><div class="token-name">RTVColors.gray3</div><div class="token-value">#E8EAEA (borders)</div></div></div>
+  </div>
+
+  <!-- Spacing -->
+  <h2 id="spacing">Spacing</h2>
+  <div class="src-path">lib/util/theme/spacing.dart → RTVSpacing</div>
+  <p>Use <code>RTVSpacing.*</code> constants and <code>RTVGap.*</code> widgets instead of hardcoded values. All values in logical pixels.</p>
+  <div style="max-width:480px; margin-bottom:20px;">
+    <div class="spacing-row"><div class="spacing-label">xxxsm</div><div class="spacing-bar" style="width:8px"></div><div class="spacing-px">8 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xxsm</div><div class="spacing-bar" style="width:16px"></div><div class="spacing-px">16 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xsm</div><div class="spacing-bar" style="width:24px"></div><div class="spacing-px">24 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">sm</div><div class="spacing-bar" style="width:32px"></div><div class="spacing-px">32 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">m</div><div class="spacing-bar" style="width:40px"></div><div class="spacing-px">40 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xl</div><div class="spacing-bar" style="width:56px"></div><div class="spacing-px">56 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xl1</div><div class="spacing-bar" style="width:72px"></div><div class="spacing-px">72 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xl2</div><div class="spacing-bar" style="width:80px"></div><div class="spacing-px">80 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xl3</div><div class="spacing-bar" style="width:96px"></div><div class="spacing-px">96 px</div></div>
+    <div class="spacing-row"><div class="spacing-label">xl4</div><div class="spacing-bar" style="width:120px"></div><div class="spacing-px">120 px</div></div>
+  </div>
+
+  <!-- Radius -->
+  <h2 id="radius">Border Radius</h2>
+  <div class="src-path">lib/util/theme/spacing.dart → RTVRadius</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Constant</th><th>Value</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVRadius.sm</code></td><td>2 dp</td><td>Tight elements, section borders</td></tr>
+        <tr><td><code>RTVRadius.md</code></td><td>4 dp</td><td>Default — input fields, cards, containers</td></tr>
+        <tr><td><code>RTVRadius.lg</code></td><td>8 dp</td><td>Large cards, modals, chart containers</td></tr>
+        <tr><td><code>RTVRadius.pill</code></td><td>12 dp</td><td>Pills and offline badge</td></tr>
+        <tr><td><code>RTVRadius.chip</code></td><td>14 dp</td><td>Selectable chips (topics, challenges)</td></tr>
+        <tr><td><code>RTVRadius.full</code></td><td>999 dp</td><td>Fully rounded (avatar, FAB)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Typography -->
+  <h2 id="typography">Typography</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_text.dart</div>
+  <p>Use <code>RTVText.*</code> factory constructors for all text. Font sizes are responsive: tablet gets +8 dp over phone. Font family resolves from <code>RTVThemeConfig.fontFamily</code>.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Factory</th><th>Phone (dp)</th><th>Tablet (dp)</th><th>Weight</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVText.h1</code></td><td>48</td><td>56</td><td>700</td></tr>
+        <tr><td><code>RTVText.h2</code></td><td>40</td><td>48</td><td>700</td></tr>
+        <tr><td><code>RTVText.h3</code></td><td>32</td><td>40</td><td>700</td></tr>
+        <tr><td><code>RTVText.h4</code></td><td>24</td><td>32</td><td>700</td></tr>
+        <tr><td><code>RTVText.h5</code></td><td>20</td><td>24</td><td>700</td></tr>
+        <tr><td><code>RTVText.h6</code></td><td>18</td><td>20</td><td>700</td></tr>
+        <tr><td><code>RTVText.bodyLarge</code></td><td>16</td><td>18</td><td>400</td></tr>
+        <tr><td><code>RTVText.bodyNormal</code></td><td>14</td><td>16</td><td>400</td></tr>
+        <tr><td><code>RTVText.bodySmall</code></td><td>12</td><td>14</td><td>400</td></tr>
+        <tr><td><code>RTVText.label</code></td><td>12</td><td>14</td><td>600</td></tr>
+        <tr><td><code>RTVText.button</code></td><td>14</td><td>16</td><td>600</td></tr>
+        <tr><td><code>RTVText.caption</code></td><td>11</td><td>12</td><td>400</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── CORE COMPONENTS ── -->
+  <h2 id="button">RTVButton</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_button.dart</div>
+  <p>The single button component for all interactive actions. Returns a <code>Future</code> from <code>onPressed</code> to auto-manage loading state — callers don't need their own <code>_isSubmitting</code> flag. All variants are sized to <code>RTVFieldMetrics.height</code> to align with adjacent inputs.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Factory</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVButton.primary()</code></td><td>Dark teal fill, white text. Use for the main action on a screen.</td></tr>
+        <tr><td><code>RTVButton.secondary()</code></td><td>Outlined, transparent fill. Use for secondary / cancel actions.</td></tr>
+        <tr><td><code>RTVButton.fullWidth()</code></td><td>Stretches to container width. Use in forms and bottom-of-screen CTAs.</td></tr>
+        <tr><td><code>RTVButton.disabled()</code></td><td>Gray fill, non-interactive. Prefer passing <code>onPressed: null</code> instead.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>// Auto-loading state from async onPressed
+RTVButton.primary(
+  label: 'Submit report',
+  onPressed: () async {
+    await _submitReport();  // button spins until this completes
+  },
+)
+
+// Force loading from external state
+RTVButton.primary(
+  label: 'Syncing…',
+  isLoading: _isSyncing,
+  onPressed: null,
+)</code></pre>
+
+  <!-- Alert -->
+  <h2 id="alert">RTVAlert</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_alert.dart</div>
+  <p>Standard confirm/feedback dialog. Four semantic types with matching icon, badge tint, and action button color. Use <code>RTVAlert.confirm()</code> for decisions and <code>RTVAlert.notify()</code> for informational feedback.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Type</th><th>Icon color</th><th>Action button</th><th>Use for</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVAlertType.error</code></td><td>#910E17</td><td>#C1121F</td><td>Destructive actions, failures</td></tr>
+        <tr><td><code>RTVAlertType.warning</code></td><td>#F08355</td><td>#F08355</td><td>Risky or irreversible actions</td></tr>
+        <tr><td><code>RTVAlertType.success</code></td><td>#7B9755</td><td>#5D7B36</td><td>Confirmations of successful actions</td></tr>
+        <tr><td><code>RTVAlertType.info</code></td><td>#015158</td><td>#015158</td><td>Neutral information or prompts</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>// Confirm — returns true if user pressed the primary action
+final confirmed = await RTVAlert.confirm(
+  context,
+  type: RTVAlertType.warning,
+  title: 'Discard this report?',
+  message: 'The details you entered will be lost.',
+  confirmLabel: 'Discard',
+);
+if (confirmed == true) _discardReport();
+
+// Notify — no return value, just informs
+await RTVAlert.notify(
+  context,
+  type: RTVAlertType.success,
+  title: 'Report submitted',
+  message: 'Your training report has been saved.',
+);</code></pre>
+
+  <!-- Input -->
+  <h2 id="input">RTVInput / RTVInputDecoration</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_input.dart</div>
+  <p>Input decoration presets for all <code>TextFormField</code> and <code>TextField</code> widgets. All presets delegate to <code>RTVFieldMetrics</code> so every field is exactly the same height as buttons and selects beside it.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Preset</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVInputDecoration.standard()</code></td><td>Default bordered input field</td></tr>
+        <tr><td><code>RTVInputDecoration.textArea()</code></td><td>Multi-line text areas</td></tr>
+        <tr><td><code>RTVInputDecoration.success()</code></td><td>Green border for valid state</td></tr>
+        <tr><td><code>RTVInputDecoration.warning()</code></td><td>Amber border for warning state</td></tr>
+        <tr><td><code>RTVInputDecoration.error()</code></td><td>Red border + error text for invalid state</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>TextFormField(
+  controller: _nameCtrl,
+  decoration: RTVInputDecoration.standard(hintText: 'Full name'),
+)
+
+// With error state
+TextFormField(
+  decoration: RTVInputDecoration.error(
+    hintText: 'Phone number',
+    errorText: _phoneError,
+  ),
+)</code></pre>
+
+  <!-- Text -->
+  <h2 id="text">RTVText</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_text.dart</div>
+  <p>Centralized text widget. Use factory constructors for semantic roles — this ensures uniform sizing and responsive scaling across all screens. All headings default to <code>RTVColors.primary</code>; pass <code>color</code> to override.</p>
+  <pre><code>RTVText.h4('Training Summary')
+RTVText.bodyNormal('Enter the number of attendees', color: RTVColors.textSecondary)
+RTVText.label('District', color: RTVColors.primary600)
+RTVText.button('Save and continue')</code></pre>
+
+  <!-- Modal -->
+  <h2 id="modal">RTVModalCard</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_modal.dart</div>
+  <p>Standard modal card with a header row (title left, close ✕ right) and a scrollable body. Used for Change Language, Changelog, and Sync Activity Logs dialogs. Figma nodes: 8522:6509 / 9312:157003 / 9332:1562.</p>
+  <pre><code>showDialog(
+  context: context,
+  builder: (_) => RTVModalCard(
+    title: 'Sync Activity',
+    maxHeight: 520,
+    child: SyncLogList(),
+  ),
+);</code></pre>
+
+  <!-- ── NAVIGATION ── -->
+  <h2 id="app-bar">RTVAppBar</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_app_bar.dart</div>
+  <p>Top app bar used on all primary screens. Shows last sync time, notification badge, and an offline pill automatically when connectivity is lost. The pill renders nothing while online — safe to include on all screens.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Prop</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>lastSyncTime</code></td><td>String?</td><td>Shown as "Last sync: …" unless <code>isSyncing</code> is true, in which case rendered verbatim as a progress message</td></tr>
+        <tr><td><code>notificationCount</code></td><td>int</td><td>Badge count on the notification icon (0 hides the badge)</td></tr>
+        <tr><td><code>isSyncing</code></td><td>bool</td><td>Spins the sync icon continuously</td></tr>
+        <tr><td><code>showConnectivityBadge</code></td><td>bool</td><td>Defaults to true — opt out only where the header has no width to spare</td></tr>
+        <tr><td><code>actions</code></td><td>List&lt;Widget&gt;?</td><td>Extra trailing widgets appended after the built-in actions</td></tr>
+        <tr><td><code>bottom</code></td><td>PreferredSizeWidget?</td><td>Widget pinned below the bar (e.g. a tab bar)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bottom Nav -->
+  <h2 id="bottom-nav">RTVBottomNav</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_bottom_nav.dart</div>
+  <p>Bottom navigation bar. Active tab has a primary-filled background with white text; inactive tabs are transparent with primary text. 80 dp height.</p>
+  <pre><code>RTVBottomNav(
+  currentIndex: _tab,
+  onTap: (i) => setState(() => _tab = i),
+  items: const [
+    RTVBottomNavItem(icon: Icons.home_outlined,       label: 'Home'),
+    RTVBottomNavItem(icon: Icons.bar_chart_outlined,  label: 'Dashboards'),
+    RTVBottomNavItem(icon: Icons.assignment_outlined, label: 'Reports'),
+  ],
+)</code></pre>
+
+  <!-- Tab Bar -->
+  <h2 id="tab-bar">RTVUnderlineTabBar</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_tab_bar.dart</div>
+  <p>Tabs with a 0.69 dp teal bottom border. Each tab fills equal width. Supports an optional count badge per tab (used in Workplans). Automatically switches between fixed-width and scrollable layout when tab labels exceed the available width.</p>
+  <pre><code>RTVUnderlineTabBar(
+  currentIndex: _tabIndex,
+  onTap: (i) => setState(() => _tabIndex = i),
+  tabs: const [
+    RTVUnderlineTab(label: 'All households', count: 142),
+    RTVUnderlineTab(label: 'Pending',         count: 17),
+    RTVUnderlineTab(label: 'Completed'),
+  ],
+)</code></pre>
+
+  <!-- ── LAYOUT & UTILITY ── -->
+  <h2 id="container">RTVContainer</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_container.dart</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Factory</th><th>Appearance</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVContainer.card()</code></td><td>White fill, gray2 border, 8 dp radius, 16 dp padding</td></tr>
+        <tr><td><code>RTVContainer.cardSquare()</code></td><td>White fill, gray2 border, 0 dp radius (sharp-edged dashboard surfaces)</td></tr>
+        <tr><td><code>RTVContainer.surface()</code></td><td>surfacePage fill, no border</td></tr>
+        <tr><td><code>RTVContainer.outlined()</code></td><td>Transparent fill, borderPrimary border</td></tr>
+        <tr><td><code>RTVContainer.tag()</code></td><td>Small pill-shaped chip (gray3 fill)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Gap -->
+  <h2 id="gap">RTVGap</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_gap.dart</div>
+  <p>Replace <code>SizedBox(height: X)</code> with semantic gap constants. <code>RTVGap.horizontal.*</code> gives the equivalent horizontal variant.</p>
+  <pre><code>Column(
+  children: [
+    RTVText.h5('Section title'),
+    RTVGap.xsm,          // 24 dp vertical
+    SomeContentWidget(),
+    RTVGap.sm,           // 32 dp vertical
+    RTVButton.primary(label: 'Continue', onPressed: _next),
+  ],
+)
+
+Row(
+  children: [
+    Icon(Icons.person_outlined),
+    RTVGap.horizontal.xxxsm,  // 8 dp horizontal
+    RTVText.label('Officer'),
+  ],
+)</code></pre>
+
+  <!-- PressScale -->
+  <h2 id="press-scale">RTVPressScale</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_press_scale.dart</div>
+  <p>Wraps any tappable widget so it scales to 0.93 on press and springs back on release. Uses a <code>Listener</code> so pointer events pass through to the wrapped button — the child's <code>onPressed</code> still fires normally.</p>
+  <pre><code>RTVPressScale(
+  child: GestureDetector(
+    onTap: _openCard,
+    child: HouseholdCardWidget(household: h),
+  ),
+)</code></pre>
+
+  <!-- Breakpoints -->
+  <h2 id="breakpoints">RTVBreakpoints</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_breakpoints.dart</div>
+  <p>Responsive layout helper. RTV phone reference frame is 428 dp (Figma). Phone layout is ≤480 dp; tablet is ≥600 dp.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Constant / Method</th><th>Value</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVBreakpoints.kCompactPhone</code></td><td>360 dp</td><td>Galaxy S / baseline small phones</td></tr>
+        <tr><td><code>RTVBreakpoints.kLargePhone</code></td><td>428 dp</td><td>Figma reference (RTV)</td></tr>
+        <tr><td><code>RTVBreakpoints.kPhoneMax</code></td><td>480 dp</td><td>Phone layout upper bound</td></tr>
+        <tr><td><code>RTVBreakpoints.kTablet</code></td><td>600 dp</td><td>Tablet layout lower bound</td></tr>
+        <tr><td><code>RTVBreakpoints.isPhone(context)</code></td><td>&lt;480 dp</td><td>Switch to single-column, reduced gutters</td></tr>
+        <tr><td><code>RTVBreakpoints.isCompactPhone(context)</code></td><td>&lt;400 dp</td><td>Tightest layouts for small Android devices</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>// Column count varies by screen size
+final cols = RTVBreakpoints.isPhone(context) ? 1 : 2;
+
+// Value helper for any number of breakpoints
+final padding = RTVBreakpoints.value(
+  context,
+  phone: 16.0,
+  tablet: 24.0,
+  desktop: 32.0,
+);</code></pre>
+
+  <!-- ── FORM COMPONENTS ── -->
+  <h2 id="form-fields">Form Field Widgets</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_form_field.dart</div>
+  <p>Single source of truth for all report form inputs. All fields are <code>RTVFieldMetrics.height</code> tall so labels, text inputs, and selects line up on the same baseline.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Widget</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>RTVFormSectionHeader</code></td><td>Teal 16 dp section heading within a form (e.g. "Training attendance")</td></tr>
+        <tr><td><code>RTVNumberedLabel</code></td><td>"N. text" — numbered label before a form field (14 dp, black, regular)</td></tr>
+        <tr><td><code>RTVFieldLabel</code></td><td>Un-numbered variant of the field label</td></tr>
+        <tr><td><code>RTVFormTextField</code></td><td>Full-height text input with teal border, optional keyboard type</td></tr>
+        <tr><td><code>RTVSelectField</code></td><td>Single-select dropdown at field height</td></tr>
+        <tr><td><code>RTVMultiSelectField</code></td><td>Multi-select dropdown with chips for selected items</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>Column(children: [
+  const RTVFormSectionHeader('Attendees'),
+  const RTVNumberedLabel(1, 'Number of men'),
+  RTVFormTextField(controller: _menCtrl, hint: 'Enter number',
+      keyboardType: TextInputType.number),
+  const RTVNumberedLabel(2, 'Number of women'),
+  RTVFormTextField(controller: _womenCtrl, hint: 'Enter number',
+      keyboardType: TextInputType.number),
+  RTVSelectField&lt;Village&gt;(
+    hint: 'Select village',
+    value: _village,
+    items: _villages,
+    labelOf: (v) => v.name,
+    onChanged: (v) => setState(() => _village = v),
+  ),
+])</code></pre>
+
+  <!-- Search Field -->
+  <h2 id="search-field">RTVSearchField</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_search_field.dart</div>
+  <p>Standardized search box for all list filters. Same height as form fields. Supports optional clear (✕) button when the field has text. Used in workplans, report histories, household pickers.</p>
+  <pre><code>RTVSearchField(
+  hint: 'Search workplans',
+  controller: _searchCtrl,
+  onChanged: (q) => setState(() => _query = q),
+  onClear: () {
+    _searchCtrl.clear();
+    setState(() => _query = '');
+  },
+)</code></pre>
+
+  <!-- Choice Question -->
+  <h2 id="choice-question">RTVChoiceQuestion</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_choice_question.dart</div>
+  <p>A complete choice question widget: prompt label above, options (chips or dropdown), validation error below. Comes in single-select and multi-select variants. Report forms use these through <code>CheckinFormMixin</code> which adds preview-ledger recording on top.</p>
+  <pre><code>RTVSingleChoiceQuestion&lt;String&gt;(
+  label: 'Preferred language',
+  placeholder: context.tr('selectAnOption'),
+  value: _language,
+  options: languages,
+  labelOf: (l) => l,
+  errorMessage: context.tr('pleaseSelectALanguage'),
+  onChanged: (l) => setState(() => _language = l),
+)
+
+RTVMultiChoiceQuestion&lt;Topic&gt;(
+  label: 'Topics covered',
+  values: _selectedTopics,
+  options: allTopics,
+  labelOf: (t) => t.name,
+  onChanged: (topics) => setState(() => _selectedTopics = topics),
+)</code></pre>
+
+  <!-- Filter Select -->
+  <h2 id="filter-select">RTVFilterSelect</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_filter_select.dart</div>
+  <p>Inline filter sitting inside a dashboard section header. Not a form field — no border or box. Opens a menu of string options on tap. Sizes to its caption; wrap in <code>Flexible</code> inside a <code>Row</code> to allow ellipsis.</p>
+  <pre><code>Row(children: [
+  RTVText.h6('Household attendance'),
+  const Spacer(),
+  Flexible(
+    child: RTVFilterSelect(
+      value: _selectedMonth,
+      options: _months,
+      onSelected: (m) => setState(() => _selectedMonth = m),
+      placeholder: 'All months',
+      placeholderFor: 'all',
+    ),
+  ),
+])</code></pre>
+
+  <!-- ── DISPLAY ── -->
+  <h2 id="empty-state">RTVEmptyState</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_empty_state.dart</div>
+  <p>Empty-state placeholder used inside dashboard cards when a chart, list, or table has no data. Figma node 8261:15249. Pass <code>withCard: false</code> when the widget is already inside a card and you only need the centered content.</p>
+  <pre><code>RTVEmptyState(
+  icon: Icons.bar_chart_outlined,
+  title: 'No training data',
+  description: 'Training reports will appear here once submitted.',
+)
+
+// Inside an existing card
+RTVEmptyState(
+  withCard: false,
+  icon: Icons.checklist_rounded,
+  title: 'No workplans',
+  description: 'Workplans created this week will appear here.',
+)</code></pre>
+
+  <!-- Message Callout -->
+  <h2 id="message-callout">RTVMessageCallout</h2>
+  <div class="src-path">lib/ui/shared/design_system/rtv_message_callout.dart</div>
+  <p>The shaded coaching-message block inside questionnaire screens. Soft teal wash (<code>RTVColors.surfaceMessage</code>), solid 3 dp left rule in <code>borderPrimary</code>. Renders the message in quotes as something said to the household, not as app copy.</p>
+  <pre><code>RTVMessageCallout(
+  message: _coachingMessage,  // generated text from the backend
+  label: 'Message:',
+)</code></pre>
+
+  <!-- Report Status -->
+  <h2 id="report-status">Report Status Components</h2>
+  <div class="src-path">lib/ui/components/</div>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-name">ReportStatusChip</div>
+      <div class="comp-file">report_status_chip.dart</div>
+      <div class="comp-desc">Small status chip shown on report cards and list rows. Colors encode status: draft (gray), pending (amber), approved (green), rejected (red).</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ReportStatusBanner</div>
+      <div class="comp-file">report_status_banner.dart</div>
+      <div class="comp-desc">Full-width status banner shown at the top of a report detail screen. Larger treatment than the chip with descriptive text.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ReportStatusWidget</div>
+      <div class="comp-file">report_status_widget.dart</div>
+      <div class="comp-desc">Composite widget combining status icon, label, and timestamp for timeline views.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ReportCardFooter</div>
+      <div class="comp-file">report_card_footer.dart</div>
+      <div class="comp-desc">Footer row on report list cards — shows status chip, submission date, and action shortcut.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ReportPrimaryAction</div>
+      <div class="comp-file">report_primary_action.dart</div>
+      <div class="comp-desc">The primary CTA button on a report detail screen. Changes label and behavior based on report status (Submit / Edit / Resubmit).</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ReportActionsMenu</div>
+      <div class="comp-file">report_actions_menu.dart</div>
+      <div class="comp-desc">Overflow menu with secondary actions: Edit draft, Discard, View history.</div>
+    </div>
+  </div>
+
+  <!-- Connectivity -->
+  <h2 id="connectivity">Connectivity &amp; Sync</h2>
+  <div class="src-path">lib/ui/components/</div>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-name">ConnectivityStatusWidget</div>
+      <div class="comp-file">connectivity_status_widget.dart</div>
+      <div class="comp-desc">The "Offline" pill shown in the app bar. Renders nothing when online — safe to include on all screens. Updates reactively from the connectivity provider.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ConnectivityAnnouncer</div>
+      <div class="comp-file">connectivity_announcer.dart</div>
+      <div class="comp-desc">Wraps a screen and shows a toast-style banner when the device goes offline or comes back online.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">SyncHealthBanner</div>
+      <div class="comp-file">sync_health_banner.dart</div>
+      <div class="comp-desc">Persistent banner shown when there are unsynced reports older than a threshold. Links to the sync details screen.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">LogsUploadProgressBanner</div>
+      <div class="comp-file">logs_upload_progress_banner.dart</div>
+      <div class="comp-desc">Animated progress indicator for background log uploads. See <code>README_logs_upload_progress.md</code> for implementation notes on the upload lifecycle.</div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<footer>Raising The Village &nbsp;&middot;&nbsp; rtvinc.github.io/docs &nbsp;&middot;&nbsp; &copy; 2026</footer>
+
+<script src="../anchor.js"></script>
+</body>
+</html>
