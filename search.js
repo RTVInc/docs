@@ -343,8 +343,14 @@
   });
 
   /* ── Search button injection ── */
-  // Add a search button to the site header on all pages
+  // Add a search button to the site header on all pages.
+  // If the page already has a #rtv-search-trigger (e.g. the home page inlines one), just bind it.
   document.addEventListener('DOMContentLoaded', function () {
+    var existing = document.getElementById('rtv-search-trigger');
+    if (existing) {
+      existing.addEventListener('click', openModal);
+      return;
+    }
     var header = document.querySelector('.site-header');
     if (!header) return;
 

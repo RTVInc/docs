@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Model — Implementation · Raising The Village</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --spruce: #183032;
+    --teal: #018793;
+    --teal-l: #4CB5BE;
+    --ink: rgba(255,255,255,0.87);
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-muted: rgba(255,255,255,0.35);
+    --rule: rgba(255,255,255,0.09);
+    --card-bg: rgba(255,255,255,0.05);
+    --card-bd: rgba(255,255,255,0.1);
+    --sidebar-w: 220px;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--spruce); color: var(--ink); min-height: 100vh;
+  }
+
+  /* Header */
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--rule);
+  }
+  .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .site-logo-name { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.7; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal-l); text-decoration: none; opacity: 0.8; transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Hero */
+  .hero { padding: 56px 32px 48px; border-bottom: 1px solid var(--rule); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal-l); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero p { font-size: 15px; color: var(--ink-mid); line-height: 1.65; max-width: 660px; }
+
+  /* Layout */
+  .page-body { display: flex; align-items: flex-start; max-width: 1200px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink: 0;
+    position: sticky; top: 32px;
+    padding: 32px 0 32px;
+    max-height: calc(100vh - 64px); overflow-y: auto;
+  }
+  .sidebar-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-muted); padding: 0 0 10px; margin-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .sidebar-nav { list-style: none; margin-top: 12px; }
+  .sidebar-nav li { margin-bottom: 2px; }
+  .sidebar-nav a {
+    display: block; padding: 6px 10px; border-radius: 6px;
+    font-size: 13px; color: var(--ink-mid); text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sidebar-nav a:hover { background: rgba(1,135,147,0.14); color: var(--ink); }
+  .sidebar-nav a.active { background: rgba(76,181,190,0.12); color: var(--teal-l); }
+
+  /* Content */
+  .content { flex: 1; min-width: 0; padding: 40px 0 40px 48px; }
+
+  /* Sections */
+  .service-section { margin-bottom: 72px; }
+  .service-section:last-child { margin-bottom: 0; }
+
+  .service-heading {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.015em;
+    padding-bottom: 14px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .service-meta {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .service-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-laravel { background: rgba(255,80,50,0.14); color: #ff7060; }
+  .tag-node { background: rgba(104,211,145,0.12); color: #68d391; }
+  .tag-mongo { background: rgba(76,181,190,0.14); color: var(--teal-l); }
+  .service-db { font-size: 12px; color: var(--ink-muted); font-family: 'IBM Plex Mono', monospace; }
+
+  .service-desc { font-size: 14px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 24px; max-width: 680px; }
+
+  /* Diagrams */
+  .diagram-wrap {
+    background: rgba(0,0,0,0.25); border: 1px solid var(--card-bd);
+    border-radius: 10px; padding: 24px; overflow-x: auto; margin-bottom: 20px;
+  }
+  .mermaid { min-width: 400px; }
+
+  /* Note box */
+  .note {
+    background: rgba(1,135,147,0.08); border-left: 3px solid var(--teal);
+    border-radius: 0 6px 6px 0; padding: 14px 18px; margin-bottom: 20px;
+  }
+  .note p { font-size: 13px; color: var(--ink-mid); margin-bottom: 8px; line-height: 1.65; }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* Collection list for DataMongo */
+  .collection-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;
+  }
+  .collection-item {
+    background: var(--card-bg); border: 1px solid var(--card-bd);
+    border-radius: 8px; padding: 12px 14px;
+    font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--teal-l);
+  }
+  .collection-item-desc { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; color: var(--ink-muted); margin-top: 4px; }
+
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; opacity: 0.2; letter-spacing: 0.06em; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+  @media (max-width: 900px) {
+    .page-body { flex-direction: column; }
+    .sidebar { position: static; width: 100%; max-height: none; padding: 24px 0 0; }
+    .content { padding: 32px 0 0; }
+  }
+  @media (max-width: 600px) {
+    .site-header { padding: 14px 20px; }
+    .hero { padding: 40px 20px 32px; }
+    .page-body { padding: 0 20px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="site-logo" href="../">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CB5BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="site-logo-name">Raising The Village</span>
+  </a>
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Implementation Docs
+  </a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Implementation System</div>
+  <h1>Data Model</h1>
+  <p>Entity-relationship diagrams for all 11 microservice databases. Each service owns its own database — services communicate via guids rather than foreign keys.</p>
+</div>
+
+<div class="page-body">
+  <nav class="sidebar" aria-label="Service sections">
+    <div class="sidebar-label">Services</div>
+    <ul class="sidebar-nav">
+      <li><a href="#user">User</a></li>
+      <li><a href="#profiles">Profiles</a></li>
+      <li><a href="#agric">Agriculture</a></li>
+      <li><a href="#training">Training</a></li>
+      <li><a href="#vsla">VSLA</a></li>
+      <li><a href="#livestock">Livestock</a></li>
+      <li><a href="#officer-checkin">Officer Check-In</a></li>
+      <li><a href="#leadership">Leadership</a></li>
+      <li><a href="#workplan">Workplan</a></li>
+      <li><a href="#data-mongo">DataMongo</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <!-- ── User Service ── -->
+    <section class="service-section" id="user">
+      <h2 class="service-heading">User Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">user_db</span>
+      </div>
+      <p class="service-desc">Manages authentication, identity, tenants, groups, roles, permissions, API keys, and device registration. All other services reference users by <code>user_guid</code>.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  users {
+    bigint id PK
+    text guid
+    string first_name
+    string last_name
+    string email
+    string phone_number
+  }
+  tenants {
+    bigint id PK
+    string guid
+    string name
+  }
+  groups {
+    bigint id PK
+    string guid
+    string name
+  }
+  user_groups {
+    bigint id PK
+    string guid
+    string user_guid FK
+    string group_guid FK
+  }
+  group_permissions {
+    bigint id PK
+    string group_guid FK
+    string permission
+  }
+  roles {
+    bigint id PK
+    string guid
+    string name
+  }
+  user_roles {
+    bigint id PK
+    string guid
+    string user_guid FK
+    string role_guid FK
+  }
+  role_permissions {
+    bigint id PK
+    string guid
+    string role_guid FK
+    string name
+  }
+  api_keys {
+    bigint id PK
+    string guid
+    string user_guid FK
+    string name
+    text key
+  }
+  devices {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string model
+    string asset_name
+    string serial_number
+  }
+  refresh_tokens {
+    bigint id PK
+    string guid
+    string user_guid FK
+    string token
+    timestamp expires_at
+    boolean revoked
+  }
+
+  users ||--o{ user_groups : "member of"
+  groups ||--o{ user_groups : "has"
+  groups ||--o{ group_permissions : "has"
+  users ||--o{ api_keys : "owns"
+  users ||--o{ refresh_tokens : "has"
+  roles ||--o{ user_roles : "assigned via"
+  roles ||--o{ role_permissions : "grants"
+  tenants ||--o{ devices : "owns"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── Profiles Service ── -->
+    <section class="service-section" id="profiles">
+      <h2 class="service-heading">Profiles Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">profiles_db</span>
+      </div>
+      <p class="service-desc">Holds the geographic hierarchy (region → district → cluster → village → household), programme scheduling (cohorts, cycles, schedules), household cards, photos, and project records. This is the master reference for location data used across all services.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  regions {
+    bigint id PK
+    text guid
+    string name
+  }
+  districts {
+    bigint id PK
+    string guid
+    string region_guid FK
+    string name
+  }
+  clusters {
+    bigint id PK
+    string guid
+    string district_guid FK
+    string name
+  }
+  villages {
+    bigint id PK
+    string guid
+    string cluster_guid FK
+    string name
+  }
+  households {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string name
+  }
+  household_cards {
+    bigint id PK
+    string guid
+    string household_guid FK
+    string village_guid FK
+    string user_guid
+    string relationship_in_household
+    string image_path
+  }
+  cards {
+    bigint id PK
+    string guid
+    string household_guid FK
+    integer card_id
+    string qr_code
+    string status
+  }
+  cohorts {
+    bigint id PK
+    string guid
+    string name
+    string year
+    date start_date
+    date end_date
+  }
+  cycles {
+    bigint id PK
+    string guid
+    string cohort_guid FK
+    string name
+    date start_date
+    date end_date
+  }
+  schedules {
+    bigint id PK
+    string guid
+    string cycle_guid FK
+    json months_json
+  }
+  projects {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string name
+    string funder
+    string status
+    date start_date
+    date end_date
+  }
+  photos {
+    bigint id PK
+    string guid
+    string path
+    text description
+  }
+
+  regions ||--o{ districts : "contains"
+  districts ||--o{ clusters : "contains"
+  clusters ||--o{ villages : "contains"
+  villages ||--o{ households : "contains"
+  households ||--o{ household_cards : "has"
+  households ||--o{ cards : "has"
+  cohorts ||--o{ cycles : "has"
+  cycles ||--o{ schedules : "has"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── Agriculture Service ── -->
+    <section class="service-section" id="agric">
+      <h2 class="service-heading">Agriculture Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">agric_db</span>
+      </div>
+      <p class="service-desc">Tracks the full agricultural input supply chain: seed and tool distributions to villages and households, nursery bed preparation, seedling transplants, passon (pass-on) schemes, inventory management, and seed return distributions. Each distribution event is linked to a village and officer via guids.</p>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  seeds {
+    bigint id PK
+    string guid
+    string name
+  }
+  units {
+    bigint id PK
+    string guid
+    string name
+  }
+  varieties {
+    bigint id PK
+    string guid
+    string name
+  }
+  tools {
+    bigint id PK
+    string guid
+    string name
+  }
+  officials {
+    bigint id PK
+    string guid
+    string name
+  }
+  challenges {
+    bigint id PK
+    string guid
+    string name
+  }
+
+  seeds ||--o{ seed_units : "measured in"
+  units ||--o{ seed_units : "used for"
+
+  seed_units {
+    string seed_guid PK
+    string unit_guid PK
+  }
+        </pre>
+      </div>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  household_seed_distributions {
+    bigint id PK
+    string guid
+    string user_id
+    string village_id FK
+    string target_group
+    float hours_to_complete
+    double latitude
+    double longitude
+  }
+  household_seeds {
+    bigint id PK
+    string guid
+    string seed_guid FK
+    string unit_guid FK
+    string household_seed_distribution_guid FK
+    integer total_quantity
+    integer number_of_households_benefiting
+  }
+
+  village_seed_distributions {
+    bigint id PK
+    string guid
+    string user_id
+    string village_id FK
+    string target_group
+    double latitude
+    double longitude
+  }
+  village_seeds {
+    bigint id PK
+    string guid
+    string seed_guid FK
+    string unit_guid FK
+    string village_seed_distribution_guid FK
+    integer total_quantity
+  }
+
+  nursery_bed_seed_distributions {
+    bigint id PK
+    string guid
+    string village_id FK
+    double latitude
+    double longitude
+  }
+  nursery_bed_seeds {
+    bigint id PK
+    string guid
+    string nursery_bed_seed_distribution_guid FK
+    string variety_guid FK
+    integer total_quantity
+  }
+
+  seedling_distributions {
+    bigint id PK
+    string guid
+    string village_id FK
+    double latitude
+    double longitude
+  }
+  seedling_transplants {
+    bigint id PK
+    string guid
+    string seedling_distribution_guid FK
+    string variety_guid FK
+    integer total_household_number
+    float average_number_transplanted_by_household
+    string performance_rating
+  }
+
+  passon_distributions {
+    bigint id PK
+    string guid
+    string village_id FK
+    double latitude
+    double longitude
+  }
+  seed_passons {
+    bigint id PK
+    string guid
+    string passon_distribution_guid FK
+    string seed_guid FK
+    string target_group
+    integer total_primary_beneficiaries
+    integer total_quantity_to_primary_beneficiaries
+    integer total_quantity_returned_at_harvest
+  }
+
+  agric_tool_distributions {
+    bigint id PK
+    string guid
+    string village_id FK
+    float hours_to_complete
+    double latitude
+    double longitude
+  }
+  agric_tools {
+    bigint id PK
+    string guid
+    string agric_tool_distribution_guid FK
+    string name
+    integer number_of_pieces
+  }
+
+  household_seed_distributions ||--o{ household_seeds : "contains"
+  village_seed_distributions ||--o{ village_seeds : "contains"
+  nursery_bed_seed_distributions ||--o{ nursery_bed_seeds : "contains"
+  seedling_distributions ||--o{ seedling_transplants : "contains"
+  passon_distributions ||--o{ seed_passons : "contains"
+  agric_tool_distributions ||--o{ agric_tools : "contains"
+        </pre>
+      </div>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  inventories {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string cluster_guid FK
+    string user_guid FK
+    string inventory_type
+    datetime reporting_date
+    double latitude
+    double longitude
+  }
+  inventory_stocks {
+    bigint id PK
+    string guid
+    string inventory_guid FK
+    string seed_guid FK
+    string unit_guid FK
+    float quantity
+  }
+  household_seed_plans {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string seed_guid FK
+    string unit_guid FK
+    double quantity
+    double percentage_proportion_female
+    double percentage_proportion_youth
+    double percentage_proportion_male
+  }
+  distribution_households {
+    bigint id PK
+    string guid
+    string distribution_guid FK
+    string household_guid FK
+  }
+  distribution_officials {
+    bigint id PK
+    string distribution_guid FK
+    string official_guid FK
+  }
+  distribution_challenges {
+    bigint id PK
+    string distribution_guid FK
+    string challenge_guid FK
+  }
+
+  inventories ||--o{ inventory_stocks : "tracks"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── Training Service ── -->
+    <section class="service-section" id="training">
+      <h2 class="service-heading">Training Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">training_db</span>
+      </div>
+      <p class="service-desc">Records all training sessions by category, type, and topic. Tracks attendance at the household and member level, supports multi-site training (where a single session spans multiple locations), and manages reporting workplans against cycles.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  training_categories {
+    bigint id PK
+    string guid
+    string name
+  }
+  training_types {
+    bigint id PK
+    string guid
+    string training_category_id FK
+    string name
+  }
+  training_topics {
+    bigint id PK
+    string guid
+    string training_type_id FK
+    string name
+  }
+  trainings {
+    bigint id PK
+    string guid
+    string user_id FK
+    string village_id FK
+    string category_id FK
+    integer training_day
+    string trainer_name
+    integer number_of_households
+    integer hours_to_complete
+    double latitude
+    double longitude
+  }
+  training_sites {
+    bigint id PK
+    string guid
+    string training_guid FK
+    integer site
+  }
+  training_households {
+    bigint id PK
+    string household_guid FK
+    string training_guid FK
+  }
+  training_household_member {
+    bigint id PK
+    string training_guid FK
+    string household_guid FK
+    string household_member_relationship
+  }
+  training_mutisite_households {
+    bigint id PK
+    string guid
+    string training_guid FK
+    string household_guid FK
+    string training_site_guid FK
+    boolean scanned
+    json members_data
+  }
+  reporting_workplans {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string training_type_guid FK
+    string training_category_guid FK
+    string timeline
+    string status
+    integer status_code
+  }
+
+  training_categories ||--o{ training_types : "has"
+  training_types ||--o{ training_topics : "has"
+  training_types ||--o{ reporting_workplans : "scheduled in"
+  trainings ||--o{ training_sites : "held at"
+  trainings ||--o{ training_households : "attended by"
+  trainings ||--o{ training_household_member : "member attendance"
+  trainings ||--o{ training_mutisite_households : "multi-site attendance"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── VSLA Service ── -->
+    <section class="service-section" id="vsla">
+      <h2 class="service-heading">VSLA Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">vsla_db</span>
+      </div>
+      <p class="service-desc">Village Savings and Loan Associations — manages VSLA groups, their members, financial transactions (loans, savings, expenses, social funds), loan schedules, and periodic reporting. Also tracks village champions, water user committees (WUC), village leadership teams (VLT), and coffee champions.</p>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  vslas {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string vsla_id
+    string name
+    string category
+  }
+  members {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    string household_guid FK
+    string member_id
+    string name
+    string gender
+    integer age
+  }
+  committee_members {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    string member_guid FK
+    string role
+  }
+  initiatives {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    string name
+    string initiative_type FK
+    date start_date
+    date end_date
+  }
+  initiative_types {
+    bigint id PK
+    string guid
+    string name
+  }
+  group_savings {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    integer amount
+    string source
+  }
+  expenses {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    string purpose
+    integer amount
+  }
+  social_funds {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    integer amount
+    string source
+  }
+  saving_plans {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    string name
+    date start_date
+    date end_date
+  }
+
+  vslas ||--o{ members : "has"
+  vslas ||--o{ committee_members : "governed by"
+  vslas ||--o{ initiatives : "runs"
+  vslas ||--o{ group_savings : "collects"
+  vslas ||--o{ expenses : "incurs"
+  vslas ||--o{ social_funds : "holds"
+  vslas ||--o{ saving_plans : "plans"
+        </pre>
+      </div>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  members {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+  }
+  loans {
+    bigint id PK
+    string guid
+    string member_guid FK
+    string term
+    string rate
+    string amount
+    integer total_interest
+  }
+  loan_payments {
+    bigint id PK
+    string guid
+    string loan_guid FK
+    integer amount_paid
+  }
+  member_loan_schedules {
+    bigint id PK
+    string guid
+    string loan_guid FK
+    date date_due
+    integer interest
+    integer principal
+  }
+  fines {
+    bigint id PK
+    string guid
+    string loan_guid FK
+    integer amount
+  }
+  transactions {
+    bigint id PK
+    string guid
+    string member_guid FK
+    string transaction_type
+    integer amount
+  }
+  vsla_reports {
+    bigint id PK
+    string guid
+    string vsla_guid FK
+    string user_guid FK
+    string schedule_guid FK
+    integer interest
+    integer fines_and_penalties
+    integer social_fund
+    integer expenses
+  }
+  member_reports {
+    bigint id PK
+    string guid
+    string member_guid FK
+    string user_guid FK
+    string schedule_guid FK
+    integer savings
+    integer loan_taken
+    integer loan_paid
+  }
+
+  members ||--o{ loans : "takes"
+  members ||--o{ transactions : "records"
+  members ||--o{ member_reports : "reported in"
+  loans ||--o{ loan_payments : "paid via"
+  loans ||--o{ member_loan_schedules : "scheduled"
+  loans ||--o{ fines : "incurs"
+        </pre>
+      </div>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  champions {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string household_guid FK
+    string champion_type
+    string champion_role
+    string name
+    integer age
+    string gender
+  }
+  water_sources {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string name
+    string type
+  }
+  water_source_types {
+    bigint id PK
+    string guid
+    string name
+  }
+  wuc_members {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string water_source_guid FK
+    string household_guid FK
+    string name
+    string champion_role
+  }
+  vlt_members {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string household_guid FK
+    string name
+  }
+  coffee_champions {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string household_guid FK
+    string name
+  }
+  committee_roles {
+    bigint id PK
+    string guid
+    string name
+  }
+
+  water_sources ||--o{ wuc_members : "managed by"
+  water_source_types ||--o{ water_sources : "typed as"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── Livestock Service ── -->
+    <section class="service-section" id="livestock">
+      <h2 class="service-heading">Livestock Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">livestock_db</span>
+      </div>
+      <p class="service-desc">Manages livestock and veterinary input distributions to villages and households, passon schemes for livestock, drug and feed distributions, and follow-up visits to track births, deaths, and stolen animals.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  distributions {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string user_guid FK
+    string village_guid FK
+    string target_group
+  }
+  distribution_livestocks {
+    bigint id PK
+    string guid
+    string distribution_guid FK
+    string livestock
+    integer quantity
+  }
+  distribution_household {
+    bigint id PK
+    string guid
+    string household_guid FK
+    string distribution_livestock_guid FK
+  }
+  livestock_followups {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string distribution_livestock_guid FK
+    string household_guid FK
+    string development_stage
+    integer number_of_births
+    integer number_of_deaths
+    integer number_stolen
+  }
+
+  distributions ||--o{ distribution_livestocks : "distributes"
+  distribution_livestocks ||--o{ distribution_household : "given to"
+  distribution_livestocks ||--o{ livestock_followups : "followed up"
+        </pre>
+      </div>
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  livestock_passons {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string user_guid FK
+    string village_guid FK
+    string distribution_livestock_guid FK
+    string target_group
+  }
+  passon_livestocks {
+    bigint id PK
+    string guid
+    string passon_guid FK
+    string livestock
+    integer quantity
+  }
+  passon_household {
+    bigint id PK
+    string guid
+    string household_guid FK
+    string passon_livestock_guid FK
+  }
+  drug_distributions {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string user_guid FK
+    string village_guid FK
+  }
+  drugs {
+    bigint id PK
+    string guid
+    string name
+  }
+  feeds {
+    bigint id PK
+    string guid
+    string name
+  }
+  tools {
+    bigint id PK
+    string guid
+    string name
+  }
+  units {
+    bigint id PK
+    string guid
+    string name
+  }
+
+  livestock_passons ||--o{ passon_livestocks : "contains"
+  passon_livestocks ||--o{ passon_household : "given to"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── OfficerCheckin Service ── -->
+    <section class="service-section" id="officer-checkin">
+      <h2 class="service-heading">Officer Check-In Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-node">Node.js / Sequelize / MySQL</span>
+        <span class="service-db">checkin_db</span>
+      </div>
+      <p class="service-desc">The only non-Laravel service — built with Node.js and Sequelize. Records field officer check-in visits at household level, covering agriculture compliance, coffee farming, VSLA follow-ups, community meetings, demo garden assessments, nursery bed inspections, and water source surveys. Uses integer IDs internally alongside newer guid columns.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  clusters {
+    integer clusterId PK
+    string guid
+    string name
+    integer districtId FK
+    integer countryId
+    string cohort
+    integer cycle
+    string type
+  }
+  villages {
+    integer villageId PK
+    string guid
+    string name
+    integer clusterId FK
+    integer districtId FK
+    integer households
+    integer population
+  }
+  households {
+    string householdId PK
+    string guid
+    string name
+    string gender
+    integer age
+    integer clusterId FK
+    integer villageId FK
+    double latitude
+    double longitude
+  }
+  checkins {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    string household_guid FK
+    boolean memberPresent
+    double latitude
+    double longitude
+  }
+  coffeeCheckins {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    string household_guid FK
+    double latitude
+    double longitude
+  }
+  communityMeetings {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    double latitude
+    double longitude
+  }
+  demoGardens {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    double latitude
+    double longitude
+  }
+  nurserybeds {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    double latitude
+    double longitude
+  }
+  vslaFollowUp {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    double latitude
+    double longitude
+  }
+  waterSources {
+    bigint id PK
+    string guid
+    string surveyId
+    integer officerId FK
+    integer villageId FK
+    double latitude
+    double longitude
+  }
+
+  clusters ||--o{ villages : "contains"
+  villages ||--o{ households : "contains"
+  households ||--o{ checkins : "visited in"
+  households ||--o{ coffeeCheckins : "assessed in"
+  households ||--o{ vslaFollowUp : "followed up"
+  villages ||--o{ communityMeetings : "hosts"
+  villages ||--o{ demoGardens : "has"
+  villages ||--o{ nurserybeds : "has"
+  villages ||--o{ waterSources : "has"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── Leadership Service ── -->
+    <section class="service-section" id="leadership">
+      <h2 class="service-heading">Leadership Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">leadership_db</span>
+      </div>
+      <p class="service-desc">Tracks village leadership structures — leadership categories (e.g. Village Leadership Team, VSLA Committee), roles within each category, and the individual members filling those roles. Also manages champions (agric, VSLA, wash, coffee), water sources and WUC membership, and reporting on champion progress.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  leadership_categories {
+    bigint id PK
+    string guid
+    string name
+  }
+  leadership_roles {
+    bigint id PK
+    string guid
+    string leadership_category_guid FK
+    string name
+  }
+  leadership_members {
+    bigint id PK
+    string guid
+    string household_guid FK
+    string leadership_role_guid FK
+    string name
+    string gender
+    integer age
+    string contact
+  }
+  leadership_committees {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string leadership_category_guid FK
+  }
+  champions {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string household_guid FK
+    string champion_type
+    string champion_role
+    string name
+    integer age
+    string gender
+  }
+  champion_households {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string champion_type
+    string champion_guid FK
+    string household_guid FK
+  }
+  reporting_champion_infos {
+    bigint id PK
+    string guid
+    string champion_guid FK
+  }
+  water_sources {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string name
+    string type
+  }
+  water_source_types {
+    bigint id PK
+    string guid
+    string name
+  }
+  wuc_members {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string water_source_guid FK
+    string household_guid FK
+    string name
+    string champion_role
+  }
+  vlt_members {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string household_guid FK
+    string name
+  }
+  coffee_champions {
+    bigint id PK
+    string guid
+    string village_guid FK
+    string household_guid FK
+    string name
+  }
+
+  leadership_categories ||--o{ leadership_roles : "defines"
+  leadership_categories ||--o{ leadership_committees : "organised into"
+  leadership_roles ||--o{ leadership_members : "filled by"
+  champions ||--o{ champion_households : "assigned to"
+  champions ||--o{ reporting_champion_infos : "reported via"
+  water_source_types ||--o{ water_sources : "typed as"
+  water_sources ||--o{ wuc_members : "managed by"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── Workplan Service ── -->
+    <section class="service-section" id="workplan">
+      <h2 class="service-heading">Workplan Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-laravel">Laravel / MySQL</span>
+        <span class="service-db">workplan_db</span>
+      </div>
+      <p class="service-desc">Plans and tracks programme activities at village level. Activity categories (e.g. Agriculture, Health) contain activity types, which contain specific activities. Workplans tie activities to villages and schedules, and projects define funding and purpose for groups of workplan items.</p>
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+erDiagram
+  activity_categories {
+    bigint id PK
+    string guid
+    string name
+  }
+  activity_types {
+    bigint id PK
+    string guid
+    string activity_category_guid FK
+    string name
+  }
+  activities {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string activity_type_guid FK
+    string activity_category_guid FK
+    string schedule_guid FK
+    string name
+    string created_by
+  }
+  schedules {
+    bigint id PK
+    string guid
+    string parent_guid
+    string type
+    string name
+    string start_date
+    string end_date
+  }
+  projects {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string schedule_guid FK
+    string name
+    string funder
+    string status
+  }
+  workplans {
+    bigint id PK
+    string guid
+    string tenant_guid FK
+    string village_guid FK
+    string schedule_guid FK
+    string activity_type_guid FK
+    string activity_guid FK
+    string project_guid FK
+    string start_date
+    string end_date
+    string status
+  }
+
+  activity_categories ||--o{ activity_types : "groups"
+  activity_types ||--o{ activities : "instances"
+  schedules ||--o{ activities : "timed by"
+  schedules ||--o{ projects : "timed by"
+  schedules ||--o{ workplans : "timed by"
+  projects ||--o{ workplans : "funds"
+  activity_types ||--o{ workplans : "planned in"
+        </pre>
+      </div>
+    </section>
+
+    <!-- ── DataMongo Service ── -->
+    <section class="service-section" id="data-mongo">
+      <h2 class="service-heading">DataMongo Service</h2>
+      <div class="service-meta">
+        <span class="service-tag tag-mongo">MongoDB</span>
+        <span class="service-db">analytics_db</span>
+      </div>
+      <p class="service-desc">A read-optimised MongoDB analytics layer. Unlike the other services, DataMongo owns no primary schema — instead it mirrors data from all other services into MongoDB collections for bulk exports, reporting queries, and performance-sensitive reads. Its migrations only add indexes to those collections.</p>
+
+      <div class="note">
+        <p>There are no SQL entity tables in this service. The following collections are indexed for analytics and export workloads.</p>
+        <p>All documents are identified by the same <code>guid</code> used in the originating service's MySQL database. Relationships between documents follow the same guid-based conventions described in each service's ER diagram above.</p>
+      </div>
+
+      <div class="collection-grid">
+        <div class="collection-item">
+          agric_distributions
+          <div class="collection-item-desc">Mirrored from Agric — all distribution events</div>
+        </div>
+        <div class="collection-item">
+          training_households
+          <div class="collection-item-desc">Mirrored from Training — household attendance</div>
+        </div>
+        <div class="collection-item">
+          training_reports
+          <div class="collection-item-desc">Mirrored from Training — session summaries</div>
+        </div>
+        <div class="collection-item">
+          households
+          <div class="collection-item-desc">Mirrored from Profiles — household profiles</div>
+        </div>
+        <div class="collection-item">
+          received_household_seeds
+          <div class="collection-item-desc">Mirrored from Agric — seed receipts</div>
+        </div>
+        <div class="collection-item">
+          vsla_members
+          <div class="collection-item-desc">Mirrored from VSLA — member records</div>
+        </div>
+        <div class="collection-item">
+          vsla_member_reports
+          <div class="collection-item-desc">Mirrored from VSLA — periodic reports</div>
+        </div>
+        <div class="collection-item">
+          vsla_initiative_reports
+          <div class="collection-item-desc">Mirrored from VSLA — initiative reports</div>
+        </div>
+        <div class="collection-item">
+          livestock_distribution_reports
+          <div class="collection-item-desc">Mirrored from Livestock — distribution events</div>
+        </div>
+        <div class="collection-item">
+          livestock_passons
+          <div class="collection-item-desc">Mirrored from Livestock — passon events</div>
+        </div>
+        <div class="collection-item">
+          livestock_followups
+          <div class="collection-item-desc">Mirrored from Livestock — follow-up visits</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Raising The Village &nbsp;·&nbsp; Implementation System &nbsp;·&nbsp; Data Model &nbsp;·&nbsp; &copy; 2026</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#183032',
+      primaryColor: '#018793',
+      primaryTextColor: 'rgba(255,255,255,0.87)',
+      edgeLabelBackground: '#183032',
+      lineColor: '#4CB5BE',
+      attributeBackgroundColorEven: 'rgba(1,135,147,0.08)',
+      attributeBackgroundColorOdd: 'rgba(0,0,0,0.2)',
+    }
+  });
+</script>
+<script src="../search.js"></script>
+<script src="../anchor.js"></script>
+</body>
+</html>

@@ -61,6 +61,27 @@
   }
   .sys-card:not(.coming-soon):hover .card-arrow { opacity: 0.7; right: 16px; }
 
+  /* Home search bar */
+  .home-search {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; max-width: 440px; margin: 28px auto 0;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(76,181,190,0.25);
+    border-radius: 10px; padding: 11px 16px;
+    color: rgba(255,255,255,0.4); font-family: inherit; font-size: 14px;
+    cursor: pointer; transition: background 0.18s, border-color 0.18s;
+    text-align: left;
+  }
+  .home-search:hover { background: rgba(1,135,147,0.16); border-color: rgba(76,181,190,0.5); color: rgba(255,255,255,0.65); }
+  .home-search svg { flex-shrink: 0; color: rgba(76,181,190,0.6); }
+  .home-search-placeholder { flex: 1; }
+  .home-search-kbd {
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px; padding: 2px 7px; color: rgba(255,255,255,0.35);
+    letter-spacing: 0.02em; flex-shrink: 0;
+  }
+  @media (max-width: 480px) { .home-search-kbd { display: none; } }
+
   /* Footer */
   footer { text-align: center; font-size: 12px; opacity: 0.22; letter-spacing: 0.06em; margin-top: 8px; }
 </style>
@@ -71,6 +92,11 @@
     <div class="org">Raising The Village</div>
     <h1>Documentation Hub</h1>
     <p class="tagline">Technical references, user guides, and onboarding materials for RTV program systems</p>
+    <button id="rtv-search-trigger" class="home-search" aria-label="Search documentation">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span class="home-search-placeholder">Search documentation…</span>
+      <kbd class="home-search-kbd">⌘K</kbd>
+    </button>
   </header>
 
   <div class="section-label">Systems</div>
